@@ -19,9 +19,9 @@ addons:
       - ftpintra.irit.fr
 before_install:
   - rm ~/.m2/settings.xml
-script:  
-    - echo -e "Host *\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
-    - export SSHPASS=$USER_PWD 
+  - echo -e "Host *\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+  - export SSHPASS=$USER_PWD 
+script: 
     - sh ./publish.sh
 branches:
   only:

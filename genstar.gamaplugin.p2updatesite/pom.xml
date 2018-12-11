@@ -36,7 +36,7 @@
 			<properties>
 				<!-- Properties relative to the distant host where to upload the repo -->
 				<ftp.url>scpexe://ftpintra.irit.fr</ftp.url>
-				<ftp.toDir>/usr/local/WWW2/genstar/p2updatesite</ftp.toDir>
+				<ftp.toDir>./usr/local/WWW2/genstar/p2updatesite</ftp.toDir>
 				<!-- Relative path to the repo being uploaded -->
 				<repo.path>${project.build.directory}/repository/</repo.path>
 			</properties>
