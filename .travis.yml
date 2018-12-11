@@ -21,7 +21,7 @@ before_install:
 script: bash ./build.sh
 after_success: 
     - echo -e "Host *\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
-    - export SSHPASS=$PASSWORD 
+    - export SSHPASS=$USER_PWD 
     - sh ./publish.sh
 branches:
   only:
