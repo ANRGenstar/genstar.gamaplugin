@@ -13,7 +13,6 @@ addons:
     apt:
         packages:      
             - sshpass
-            - oracle-java8-installer
     ssh_known_hosts:
       - 141.115.24.12
 before_install:
