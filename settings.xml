@@ -14,7 +14,7 @@
       <directoryPermissions>775</directoryPermissions>
 	  <configuration>
         <sshExecutable>plink</sshExecutable>
-        <scpExecutable>pscp</scpExecutable>
+        <scpExecutable>sftp</scpExecutable>
       </configuration>
 		 </server> 
     </servers>

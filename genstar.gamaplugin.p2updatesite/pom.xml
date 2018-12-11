@@ -19,12 +19,12 @@
 		<repository>
 			<uniqueVersion>false</uniqueVersion>
 			<id>p2Repo</id>
-			<url>sftp://ftpintra.irit.fr/./usr/local/WWW2/genstar/p2updatesite</url>
+			<url>scpexe://ftpintra.irit.fr/./usr/local/WWW2/genstar/p2updatesite</url>
 		</repository>
 		<snapshotRepository>
 			<uniqueVersion>false</uniqueVersion>
 			<id>p2Repo</id>
-			<url>sftp://ftpintra.irit.fr/./usr/local/WWW2/genstar/p2updatesite</url>
+			<url>scpexe://ftpintra.irit.fr/./usr/local/WWW2/genstar/p2updatesite</url>
 		</snapshotRepository>
 	</distributionManagement>
 
@@ -35,7 +35,7 @@
 			<id>p2Repo</id>
 			<properties>
 				<!-- Properties relative to the distant host where to upload the repo -->
-				<ftp.url>sftp://ftpintra.irit.fr</ftp.url>
+				<ftp.url>scpexe://ftpintra.irit.fr</ftp.url>
 				<ftp.toDir>/usr/local/WWW2/genstar/p2updatesite</ftp.toDir>
 				<!-- Relative path to the repo being uploaded -->
 				<repo.path>${project.build.directory}/repository/</repo.path>
