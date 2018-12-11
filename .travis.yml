@@ -16,6 +16,7 @@ addons:
             - oracle-java8-installer
     ssh_known_hosts:
       - 141.115.24.12
+      - ftpintra.irit.fr
 before_install:
   - rm ~/.m2/settings.xml
 script: bash ./build.sh
