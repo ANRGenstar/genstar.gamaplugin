@@ -17,10 +17,11 @@ addons:
       - 141.115.24.12
 before_install:
   - rm ~/.m2/settings.xml
+script: bash ./build.sh
+after_success: 
   - echo -e "Host *\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
   - export SSHPASS=$USER_PWD 
-script: 
-    - sh ./publish.sh
+  - sh ./publish.sh
 branches:
   only:
     - master
