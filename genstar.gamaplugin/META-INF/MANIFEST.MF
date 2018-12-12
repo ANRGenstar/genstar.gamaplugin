@@ -10,7 +10,6 @@ Export-Package: genstar.gamaplugin.operators,
  genstar.gamaplugin.types,
  genstar.gamaplugin.utils
 Bundle-ClassPath: lib/commons-io-2.5.jar,
- lib/jts-example-1.14.0.jar,
  lib/log4j-api-2.7.jar,
  lib/log4j-core-2.7.jar,
  lib/opencsv-2.3.jar,

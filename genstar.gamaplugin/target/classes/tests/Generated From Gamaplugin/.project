@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
 	<name>Generated tests in genstar.gamaplugin</name>
-	<comment>gamaplugin plugin</comment>
+	<comment>genstar.gamaplugin</comment>
 	<projects>
 	</projects>
 	<buildSpec>
