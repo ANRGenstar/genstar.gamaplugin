@@ -5,15 +5,15 @@
          point="gaml.extension">
    </extension>
    <extension
-         point="gama.create">
-      <implementation
-            class="genstar.gamaplugin.statements.CreateFromGenstarDelegate">
-      </implementation>
-   </extension>
-   <extension
          point="gama.models">
       <path
             name="models">
       </path>
+   </extension>
+   <extension
+         point="gama.create">
+      <implementation
+            class="genstar.gamaplugin.statements.CreateFromGenstarDelegate">
+      </implementation>
    </extension>
 </plugin>
