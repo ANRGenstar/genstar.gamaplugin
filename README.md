@@ -1,3 +1,5 @@
+ https://anrgenstar.github.io/genstar.gamaplugin/
+
 # Temporary install procedure in GAMA
 
 This install procedure has been tested the 19th of April 2018. It has many drawbacks (copy-paste of jars, incompatible with the continuous built, use of very heavy jars for genstar, with duplicated libraries, Eclipse-dependent...) but has the main advantage to integrate very well in a classical IDE for GAMA. So it is only temporary!
