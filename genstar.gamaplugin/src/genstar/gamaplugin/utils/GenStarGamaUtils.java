@@ -1,6 +1,7 @@
 package genstar.gamaplugin.utils;
 
 import org.graphstream.graph.Edge;
+
 import core.metamodel.io.GSSurveyType;
 import core.metamodel.value.IValue;
 import core.metamodel.value.binary.BooleanValue;
@@ -11,12 +12,14 @@ import core.util.data.GSEnumDataType;
 import genstar.gamaplugin.types.GamaPopGenerator;
 import genstar.gamaplugin.types.GamaRange;
 import genstar.gamaplugin.types.GamaRangeType;
+
 import msi.gama.metamodel.agent.IAgent;
 import msi.gama.metamodel.shape.IShape;
 import msi.gama.runtime.IScope;
 import msi.gama.util.graph.GamaGraph;
 import msi.gaml.types.IType;
 import msi.gaml.types.Types;
+
 import spin.SpinNetwork;
 
 public class GenStarGamaUtils {
