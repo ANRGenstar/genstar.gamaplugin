@@ -22,7 +22,7 @@ release/*
 .directory
 .DS_Store
 *.history
-*.class
+**.class
 .metadata/
 .metadata/*
 /*/gaml/
