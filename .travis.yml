@@ -18,9 +18,19 @@ addons:
             - oracle-java8-installer            
     ssh_known_hosts:
       - 141.115.24.12
+
+    # https://docs.travis-ci.com/user/sonarcloud/#inspecting-code-with-the-sonarqube-scanner
+    sonarcloud:
+      organization: "ANRGenstar" # the key of the org you chose at step #3
+      token:
+        secure: "$SONAR_TOKEN"
+        
 before_install:
   - rm ~/.m2/settings.xml
-script: bash ./build.sh
+script: 
+  - bash ./build.sh
+  # the following command line builds the project, runs the tests with coverage and then execute the SonarCloud analysis
+ # - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=ANRGenstar_genstar.gamaplugin
 after_success: 
   - echo -e "Host *\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
   - export SSHPASS=$USER_PWD 
