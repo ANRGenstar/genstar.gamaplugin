@@ -30,7 +30,7 @@ before_install:
 script: 
   - bash ./build.sh
   # the following command line builds the project, runs the tests with coverage and then execute the SonarCloud analysis
-  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=ANRGenstar_genstar.gamaplugin
+  # - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=ANRGenstar_genstar.gamaplugin
 after_success: 
   - echo -e "Host *\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
   - export SSHPASS=$USER_PWD 
