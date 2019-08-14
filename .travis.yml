@@ -18,7 +18,7 @@ addons:
   ssh_known_hosts:
   - 141.115.24.12
   sonarcloud:
-    organization: ANRGenstar
+    organization: anrgenstar
     token:
 #      secure: "$SONAR_TOKEN"
       secure: pe84NBWbsG4BZowaTTZK1wfXODiP8WxnWLs7IK5Gi/gxHEuy+WrUY3Y5q4MXJEh2Y6vF8b1X3iDLp+6MlURYZgJeUMll77ZU1fKWJdNg4ydEu5Awj+DWJdh8Zd8xclWc7i+AqswsKzEipUMoXHPy6mJVfEBB4Zh35qShGBs+gJs04tRr6W0WGoX+H8rPi9QjXoSOVoKLFJOBG0SP1G/lkBQsf6XC+GsidepvVOE2lxSUq9Amobxp0YxUt7O3GInfyOSxuEFtfdwY9hDIMny9APB2QR8xm66MPQLY7Muyu4PFU/rNaOHCMcPTOkbg+wSKK7tfYrcxf1wTY39VHUp9tfWsbrSIox5PZ/hrb/sx/qdSslT9CYptt+D6ly50ry3ZCrGoxqiBVVNB6+DMy9dkkePw5FGlMztrwGbl7WR+zvVgdzqNi6qb6EJ0Yo7Ad9A+ADSHSdQ7o1RtlyDiW8YLM99ALTf7plSjdreLI7FAOynBE6U8ea02SGfeDnIQFkWut+uJCwH2S5pzi3nd2ROQp6V24OiQ1NOuyJDbbLy2vY8ppusxF0PugC7FNkTJJsoBl07kPzq8rc9S+xBfxjgnhXWMTjtbJTrS8QyzqT99sLVhzCI4Ty4fsyAcvIXyCJrAdhqL5IdXBojlsNdYp+LaGiLeu7/4z0rl7pdmVE9S3Lg=
