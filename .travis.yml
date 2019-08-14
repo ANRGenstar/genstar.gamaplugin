@@ -20,7 +20,7 @@ addons:
   sonarcloud:
     organization: ANRGenstar
     token:
-      secure: "$SONAR_TOKEN"
+      secure: $SONAR_TOKEN
 script:
 - bash ./build.sh
 after_success:
