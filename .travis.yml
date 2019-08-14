@@ -2,39 +2,33 @@ sudo: required
 language: java
 dist: trusty
 jdk:
-  - oraclejdk8
+- oraclejdk8
 before_install:
-- echo -e "machine github.com\n  login $CI_USER_TOKEN" >> ~/.netrc
-- echo "MAVEN_OPTS='-Xmx2048m -XX:MaxPermSize=512m'" >> ~/.mavenrc
+- rm ~/.m2/settings.xml
 notifications:
   email: false
 cache:
   directories:
   - "$HOME/.m2"
 addons:
-    apt:
-        packages:      
-            - sshpass
-            - oracle-java8-installer            
-    ssh_known_hosts:
-      - 141.115.24.12
-
-    # https://docs.travis-ci.com/user/sonarcloud/#inspecting-code-with-the-sonarqube-scanner
-    sonarcloud:
-      organization: "ANRGenstar" # the key of the org you chose at step #3
-      token:
-        secure: "$SONAR_TOKEN"
-        
-before_install:
-  - rm ~/.m2/settings.xml
-script: 
-  - bash ./build.sh
-  # the following command line builds the project, runs the tests with coverage and then execute the SonarCloud analysis
-  # - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=ANRGenstar_genstar.gamaplugin
-after_success: 
-  - echo -e "Host *\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
-  - export SSHPASS=$USER_PWD 
-  - sh ./publish.sh
+  apt:
+    packages:
+    - sshpass
+    - oracle-java8-installer
+  ssh_known_hosts:
+  - 141.115.24.12
+  sonarcloud:
+    organization: ANRGenstar
+#    token:
+#      secure: "$SONAR_TOKEN"
+script:
+- bash ./build.sh
+after_success:
+- echo -e "Host *\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+- export SSHPASS=$USER_PWD
+- sh ./publish.sh
 branches:
   only:
-    - master
+  - master
+dd:
+  secure: HEqHmaobVmr9b1axsuatpahjWHB6wQ5PAT+S1EDKqK+Um+n6fwaDtPe8ENiWJmoeEsYcWsVsel/13RM+lS5IRr8UUX4jHAzKosXdYkuTMaPEzU9CLkRGUrEFdCJbnowt/xUsK2GZb4ysFunnro5Qb7jPdTNm0MOnD1lAUR6edC7Wr4t/EFiy0l5FG3o6liAUzUzBiFPtA4u3zMbwJ19wP2Bh/7tE96HLSK1/PKqbBAWUuzsccfaNcH3yBNgpRD8JvS7glSvEli1UpLAz3Jwk3dcC6Nk+8aNSxc8lo0d/tEQKdtusWmU9IkWakQUAYzoc19hgHfzV3SBCGD35PB3pacaU3K8rDUF8TZLQI4XSFeQb17up88Aax5bzBGqS00IAPt0IqVTn37hplUEOs7wAaWEoeUQJb/9kYKlRmdjyAyIoJvJnFrBPXPY1uI5vYWvhcpvaowUrqgz77PJovhHFyQGPwps7J3lSQMV6Xx8h16PKLMWkQU1oCEs3wqmi2VcxVks5ilv3ZOGZMY2XlMuEltHQbeS3NNDCQKjy+JWfK+ODnajiYWepTgbHXT49Fy0n2Z140WxvIfMUbj8hZaVdiwhgvwahjuVGhFIrgLKTPOIbNsmu7FccdcMgxCNjpNsMHYmg/XUWyus8xtIaE3G8cEv34nujaCJaNAv7+SIjeAw=
