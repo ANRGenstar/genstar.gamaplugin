@@ -17,10 +17,10 @@ addons:
     - oracle-java8-installer
   ssh_known_hosts:
   - 141.115.24.12
-#  sonarcloud:
-#    organization: ANRGenstar
-#    token:
-#      secure: "$SONAR_TOKEN"
+  sonarcloud:
+    organization: ANRGenstar
+    token:
+      secure: "$SONAR_TOKEN"
 script:
 - bash ./build.sh
 after_success:
@@ -30,5 +30,5 @@ after_success:
 branches:
   only:
   - master
-dd:
-  secure: HEqHmaobVmr9b1axsuatpahjWHB6wQ5PAT+S1EDKqK+Um+n6fwaDtPe8ENiWJmoeEsYcWsVsel/13RM+lS5IRr8UUX4jHAzKosXdYkuTMaPEzU9CLkRGUrEFdCJbnowt/xUsK2GZb4ysFunnro5Qb7jPdTNm0MOnD1lAUR6edC7Wr4t/EFiy0l5FG3o6liAUzUzBiFPtA4u3zMbwJ19wP2Bh/7tE96HLSK1/PKqbBAWUuzsccfaNcH3yBNgpRD8JvS7glSvEli1UpLAz3Jwk3dcC6Nk+8aNSxc8lo0d/tEQKdtusWmU9IkWakQUAYzoc19hgHfzV3SBCGD35PB3pacaU3K8rDUF8TZLQI4XSFeQb17up88Aax5bzBGqS00IAPt0IqVTn37hplUEOs7wAaWEoeUQJb/9kYKlRmdjyAyIoJvJnFrBPXPY1uI5vYWvhcpvaowUrqgz77PJovhHFyQGPwps7J3lSQMV6Xx8h16PKLMWkQU1oCEs3wqmi2VcxVks5ilv3ZOGZMY2XlMuEltHQbeS3NNDCQKjy+JWfK+ODnajiYWepTgbHXT49Fy0n2Z140WxvIfMUbj8hZaVdiwhgvwahjuVGhFIrgLKTPOIbNsmu7FccdcMgxCNjpNsMHYmg/XUWyus8xtIaE3G8cEv34nujaCJaNAv7+SIjeAw=
+#dd:
+#  secure: HEqHmaobVmr9b1axsuatpahjWHB6wQ5PAT+S1EDKqK+Um+n6fwaDtPe8ENiWJmoeEsYcWsVsel/13RM+lS5IRr8UUX4jHAzKosXdYkuTMaPEzU9CLkRGUrEFdCJbnowt/xUsK2GZb4ysFunnro5Qb7jPdTNm0MOnD1lAUR6edC7Wr4t/EFiy0l5FG3o6liAUzUzBiFPtA4u3zMbwJ19wP2Bh/7tE96HLSK1/PKqbBAWUuzsccfaNcH3yBNgpRD8JvS7glSvEli1UpLAz3Jwk3dcC6Nk+8aNSxc8lo0d/tEQKdtusWmU9IkWakQUAYzoc19hgHfzV3SBCGD35PB3pacaU3K8rDUF8TZLQI4XSFeQb17up88Aax5bzBGqS00IAPt0IqVTn37hplUEOs7wAaWEoeUQJb/9kYKlRmdjyAyIoJvJnFrBPXPY1uI5vYWvhcpvaowUrqgz77PJovhHFyQGPwps7J3lSQMV6Xx8h16PKLMWkQU1oCEs3wqmi2VcxVks5ilv3ZOGZMY2XlMuEltHQbeS3NNDCQKjy+JWfK+ODnajiYWepTgbHXT49Fy0n2Z140WxvIfMUbj8hZaVdiwhgvwahjuVGhFIrgLKTPOIbNsmu7FccdcMgxCNjpNsMHYmg/XUWyus8xtIaE3G8cEv34nujaCJaNAv7+SIjeAw=
