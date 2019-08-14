@@ -17,8 +17,8 @@ addons:
     - oracle-java8-installer
   ssh_known_hosts:
   - 141.115.24.12
-  sonarcloud:
-    organization: ANRGenstar
+#  sonarcloud:
+#    organization: ANRGenstar
 #    token:
 #      secure: "$SONAR_TOKEN"
 script:
