@@ -3,5 +3,5 @@
 #mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=ANRGenstar_genstar.gamaplugin &&
 # cd -
 cd genstar.gamaplugin.parent
-mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.branch=master -Dsonar.projectKey=ANRGenstar_genstar.gamaplugin &&
+mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.branch=master -Dsonar.projectKey=ANRGenstar_genstar.gamaplugin -Dsonar.login="inljWF/hsyR2r/PNuKKLCL0y3LTq2U2HI4isy8/JZzRiWFEEsydf1BCvmRuzJN4ckI7M1Bs8E7J7J4GQAjWkcgNr8LdgEtFVMtBPSn8jnIFtlNoLwiE3j/vdgn8mpibwQZaaKWHNzEa1Ziav//+9qEUnb7Hq1IOOUSduZU1FRD1ipHoVu8Qhj3Z8hivEcOAb7NwQAqZqZFlLJYquodjGeuc6+FssgIj9is39KzpETz8C4Wzd9RVkbhDoCLipSmUvqV/5QGhaisvqSuw0wJGRCHSX6eF5k4MNxgEn1A1RL3VXG4AXhjj8E7Z97z9Fr17YciF/WT0fTJVexBVwEPv1QVrse06XEJ6TjmCGwkan4vQg1vmbAaBpuoFZlEOh/fz4BBYpyQG+hTt7sbWm2cfswVzo4EgP3oH8fheHTXXhDRnFWF7xp7jANOHyyz4yIoL1GQmmFHEr6Rx1LgLsLLNJAaDvYTecp+HiWdakMUCAC4aQTDj9dnIFpXX0KD+UOEtkN33dMYwiBvbODTQf2z3R5JU9B9GZKEno2Ux5fQigytWVRWzjppBe8Gqfkl0IJlM4J5yhZRxG9OjvYogOgGStl9Msgnt+zxxiX2HAtzs8RmXs8DfH7v+mdSOZgjDW9bpoyfrQ25gn3/I6IM7vJb+bhz723yvaBO1zW8mdeZEZQD8=" &&
 cd -
