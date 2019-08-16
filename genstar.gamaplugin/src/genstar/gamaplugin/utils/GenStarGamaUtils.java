@@ -23,6 +23,7 @@ import msi.gaml.types.Types;
 import spin.SpinNetwork;
 
 public class GenStarGamaUtils {
+	
 	public static GSSurveyType toSurveyType(String type) {
 		if (type.equals("ContingencyTable"))
 			return GSSurveyType.ContingencyTable;
