@@ -18,12 +18,13 @@ addons:
   ssh_known_hosts:
   - 141.115.24.12
   sonarcloud:
-    organization: anrgenstar
+    organization: "anrgenstar"
     token:
-#      secure: "$SONAR_TOKEN"
-      secure: pe84NBWbsG4BZowaTTZK1wfXODiP8WxnWLs7IK5Gi/gxHEuy+WrUY3Y5q4MXJEh2Y6vF8b1X3iDLp+6MlURYZgJeUMll77ZU1fKWJdNg4ydEu5Awj+DWJdh8Zd8xclWc7i+AqswsKzEipUMoXHPy6mJVfEBB4Zh35qShGBs+gJs04tRr6W0WGoX+H8rPi9QjXoSOVoKLFJOBG0SP1G/lkBQsf6XC+GsidepvVOE2lxSUq9Amobxp0YxUt7O3GInfyOSxuEFtfdwY9hDIMny9APB2QR8xm66MPQLY7Muyu4PFU/rNaOHCMcPTOkbg+wSKK7tfYrcxf1wTY39VHUp9tfWsbrSIox5PZ/hrb/sx/qdSslT9CYptt+D6ly50ry3ZCrGoxqiBVVNB6+DMy9dkkePw5FGlMztrwGbl7WR+zvVgdzqNi6qb6EJ0Yo7Ad9A+ADSHSdQ7o1RtlyDiW8YLM99ALTf7plSjdreLI7FAOynBE6U8ea02SGfeDnIQFkWut+uJCwH2S5pzi3nd2ROQp6V24OiQ1NOuyJDbbLy2vY8ppusxF0PugC7FNkTJJsoBl07kPzq8rc9S+xBfxjgnhXWMTjtbJTrS8QyzqT99sLVhzCI4Ty4fsyAcvIXyCJrAdhqL5IdXBojlsNdYp+LaGiLeu7/4z0rl7pdmVE9S3Lg=
+      secure: "yn1bxhZigtOENjIFgNq5uqsk3VNCDfdkvSJIHNVgqtbOtgKunNpKQfJbSCJrRZTPua5GnawYMSCcPD4DSNrnscPFsKYckROOBi3ib5h2Bb7NQEUIc3SKTgDa1a5rdrBe516bS43LDVMHmItvgc5ez0CkFFppS8E1/2xHdrWkfFuZcoTi6AVlHh2gwLotVaUlBLJPzMfrsVrWZ7TARDz4sB5F0M7zJBRUUOxmv4ZL2DfzqTNqdCEiWF+X12OJIXr/0qlp/R63x4v4nvOXGAT1UA9kEHLD7GxsgKlsEY/Jnwo5hNfqg15i7bCmiYl6JYUC0my3hKcfL0QyidzuyS7c2eBaVB5pFgCaQuNpQ7djYPMj7yTRqoTDB0MnV4RCi+BMZjH02vM0XA1B9W5jIP3pOeszkLeaybQHB5pwnnbcknSMKOLoJ3sV3anh4h6X4hjo7N3dcLQFxXEe0OoIl8zXRu5Y20z2Q5VQPdwX8B/k8MW/RrJjB1JHUV7vNUP38S2Q0TtZcIFciqMncSctYNv7nfxR4mnL++pdUBU83tNJYDzHgzwYgwJhPCXZvvstDsTUfFH4uHp6gjXJfD/GqP4VGuUpPDFzghSbQhybRlsUgPjLGxuqwXXJp5M+otOVP/XdOVzSA5kEXZyIJehDp+hUUR3/YNaPnzvBbyoCJWaCbBc=" # encrypted value of your token
 script:
-- bash ./build.sh
+  - cd genstar.gamaplugin.parent
+  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.branch=master -Dsonar.projectKey=ANRGenstar_genstar.gamaplugin
+  - cd -
 after_success:
 - echo -e "Host *\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
 - export SSHPASS=$USER_PWD
@@ -31,5 +32,3 @@ after_success:
 branches:
   only:
   - master
-#dd:
-#  secure: pe84NBWbsG4BZowaTTZK1wfXODiP8WxnWLs7IK5Gi/gxHEuy+WrUY3Y5q4MXJEh2Y6vF8b1X3iDLp+6MlURYZgJeUMll77ZU1fKWJdNg4ydEu5Awj+DWJdh8Zd8xclWc7i+AqswsKzEipUMoXHPy6mJVfEBB4Zh35qShGBs+gJs04tRr6W0WGoX+H8rPi9QjXoSOVoKLFJOBG0SP1G/lkBQsf6XC+GsidepvVOE2lxSUq9Amobxp0YxUt7O3GInfyOSxuEFtfdwY9hDIMny9APB2QR8xm66MPQLY7Muyu4PFU/rNaOHCMcPTOkbg+wSKK7tfYrcxf1wTY39VHUp9tfWsbrSIox5PZ/hrb/sx/qdSslT9CYptt+D6ly50ry3ZCrGoxqiBVVNB6+DMy9dkkePw5FGlMztrwGbl7WR+zvVgdzqNi6qb6EJ0Yo7Ad9A+ADSHSdQ7o1RtlyDiW8YLM99ALTf7plSjdreLI7FAOynBE6U8ea02SGfeDnIQFkWut+uJCwH2S5pzi3nd2ROQp6V24OiQ1NOuyJDbbLy2vY8ppusxF0PugC7FNkTJJsoBl07kPzq8rc9S+xBfxjgnhXWMTjtbJTrS8QyzqT99sLVhzCI4Ty4fsyAcvIXyCJrAdhqL5IdXBojlsNdYp+LaGiLeu7/4z0rl7pdmVE9S3Lg=
