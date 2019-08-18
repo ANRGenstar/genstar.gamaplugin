@@ -366,10 +366,13 @@ public class GenstarGenerationOperators {
 				
 			} catch (IndexOutOfBoundsException | IllegalRegressionException 
 					| IllegalArgumentException | IOException | TransformException 
-					| InterruptedException | ExecutionException | GSMapperException 
+					| ExecutionException | GSMapperException 
 					| SchemaException | InvalidGeoFormatException e) {
 				e.printStackTrace();
-			} 	
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				Thread.currentThread().interrupt();
+			} 
 		
 		//localize the population
 		SpllPopulation localizedPop = localizer.localisePopulation();

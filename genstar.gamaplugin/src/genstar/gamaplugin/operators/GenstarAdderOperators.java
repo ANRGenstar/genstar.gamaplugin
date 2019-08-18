@@ -151,6 +151,10 @@ public class GenstarAdderOperators {
 	@doc(value = "add an attribute defined by its name (string), its datatype (type), its list of values (list) to a population_generator",
 			examples = @example(value = "add_attribute(pop_gen, \"Sex\", string,[\"Man\", \"Woman\"])", test = false))
 	public static GamaPopGenerator addAttribute(IScope scope, GamaPopGenerator gen, String name, IType dataType, IList value, Boolean ordered, String record, IType recordType) {
+		if (gen == null) {
+			gen = new GamaPopGenerator();
+		}
+		
 		GamaPopGenerator genPop = addAttribute(scope, gen, name, dataType, value, ordered);
 		genPop.getInputAttributes().addRecords();
 		try {
