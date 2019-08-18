@@ -24,6 +24,7 @@ import msi.gama.util.GamaMap;
 import msi.gama.util.IList;
 import msi.gaml.types.IType;
 
+
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class GenstarAdderOperators {
 	
@@ -125,7 +126,7 @@ public class GenstarAdderOperators {
 			//			referentAgeAttribute, mapperA1));
 				
 			} catch (GSIllegalRangedData e) {
-				e.printStackTrace();
+				throw GamaRuntimeException.error("Wrong type in the record." + e.getMessage(), scope);
 			}				
 		}
 		return gen;
@@ -166,7 +167,7 @@ public class GenstarAdderOperators {
 				)
 			);
 		} catch (GSIllegalRangedData e) {
-			GamaRuntimeException.error("Wrong type for the record", scope);
+			throw GamaRuntimeException.error("Wrong type for the record. " + e.getMessage(), scope);
 		}
 	
 		return genPop;
@@ -202,7 +203,7 @@ public class GenstarAdderOperators {
 								 attIris, Collections.emptyMap()));*/
 		//	 }
 		} catch (GSIllegalRangedData e) {
-			e.printStackTrace();
+			throw GamaRuntimeException.error("Wrong type in the record." + e.getMessage(), scope);
 		}
 		return gen;
 	}
