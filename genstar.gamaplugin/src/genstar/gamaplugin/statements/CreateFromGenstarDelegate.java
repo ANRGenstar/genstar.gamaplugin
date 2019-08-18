@@ -46,11 +46,11 @@ import java.util.Map;
  * @author Patrick Taillandier
  * @since 30 january 2017
  *
- */
+ */ 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class CreateFromGenstarDelegate implements ICreateDelegate {
 
-	public static IType type = new GamaPopGeneratorType();
+	public static final IType type = new GamaPopGeneratorType();
 	/**
 	 * Method acceptSource()
 	 *
@@ -69,7 +69,6 @@ public class CreateFromGenstarDelegate implements ICreateDelegate {
 	 */
 	@Override
 	public IType fromFacetType() {
-		if (type == null) type = new GamaPopGeneratorType();
 		if (type.getName() == null) ((GamaPopGeneratorType) type).init();
 		return type;
 	}
@@ -89,15 +88,14 @@ public class CreateFromGenstarDelegate implements ICreateDelegate {
 		
 		// Used to transform the GamaRange into a GAMA value...
 		IAgent executor = scope.getAgent();
-		msi.gama.metamodel.population.IPopulation<? extends IAgent> gama_pop = executor.getPopulationFor(statement.getDescription().getSpeciesContext().getName());
+		msi.gama.metamodel.population.IPopulation<? extends IAgent> gamaPop = executor.getPopulationFor(statement.getDescription().getSpeciesContext().getName());
 		
 		final Collection<Attribute<? extends IValue>> attributes = population.getPopulationAttributes();
 	    int nb = 0;
         List<ADemoEntity> es = new ArrayList(population);
         if (number > 0 && number < es.size()) es = scope.getRandom().shuffle(es);
         for (final ADemoEntity e : es) {
-        	final Map map = (Map) GamaMapFactory.create();
-        	//if (population instanceof SpllPopulation) {
+        	final Map map = GamaMapFactory.create();
         	if (e instanceof SpllEntity) {	
         		SpllEntity spllE = (SpllEntity) e;
         		if (spllE.getLocation() == null) continue;
@@ -107,26 +105,26 @@ public class CreateFromGenstarDelegate implements ICreateDelegate {
         	}
         	for (final Attribute<? extends IValue> attribute : attributes) {
         		// Get the species variable associated to the Genstar Attribute  
-        		IVariable var = gama_pop.getVar(attribute.getAttributeName());
+        		IVariable var = gamaPop.getVar(attribute.getAttributeName());
         		Object attributeValue;
         		Attribute attributeToPut = attribute;
         		// if the Attribute does not correspond to a variable, and if it is a MappedAttribute, try to get the Variable corresponding to the ReferentAttribute
         		if(var == null) {
         			if (attribute instanceof MappedAttribute) {
-                		Attribute referent_attribute = ((MappedAttribute) attribute).getReferentAttribute();
-        				var = gama_pop.getVar(referent_attribute.getAttributeName());
+                		Attribute referentAttribute = ((MappedAttribute) attribute).getReferentAttribute();
+        				var = gamaPop.getVar(referentAttribute.getAttributeName());
         				if(var == null) {
                 			throw GamaRuntimeException.error("Neither the attribute " + attribute.getAttributeName() + ", nor its referent attribute " + 
-                							referent_attribute.getAttributeName() +"are defined in the species " + gama_pop.getSpecies().getName(), scope);
+                							referentAttribute.getAttributeName() +"are defined in the species " + gamaPop.getSpecies().getName(), scope);
         				} else {
         					
         					Collection<? extends IValue> possibleValues = attribute.findMappedAttributeValues(e.getValueForAttribute(attribute));
         					
                     		attributeValue = GenStarGamaUtils.toGAMAValue(scope, GenstarRandomUtils.oneOf(possibleValues), true, var.getType());		
-                    		attributeToPut = referent_attribute;
+                    		attributeToPut = referentAttribute;
         				}
         			} else {
-            			throw GamaRuntimeException.error("The attribute " + attribute.getAttributeName() + "is not defined in the species " + gama_pop.getSpecies().getName(), scope);
+            			throw GamaRuntimeException.error("The attribute " + attribute.getAttributeName() + "is not defined in the species " + gamaPop.getSpecies().getName(), scope);
             		}
         		} else {
             		attributeValue = GenStarGamaUtils.toGAMAValue(scope, e.getValueForAttribute(attribute), true, var.getType());	

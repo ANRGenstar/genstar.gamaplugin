@@ -31,7 +31,6 @@ import msi.gama.precompiler.GamlAnnotations.getter;
 import msi.gama.precompiler.GamlAnnotations.variable;
 import msi.gama.precompiler.GamlAnnotations.vars;
 import msi.gama.runtime.IScope;
-import msi.gama.runtime.exceptions.GamaRuntimeException;
 import msi.gama.util.GamaListFactory;
 import msi.gama.util.IList;
 import msi.gaml.types.IType;
@@ -86,21 +85,12 @@ public class GamaPopGenerator implements IValue {
 	String crs;
 
 	List<String> pathAncilaryGeofiles;
-	
-//	
-//	Map<String, IAttribute<? extends core.metamodel.value.IValue>> inputKeyMap ;
-//	
-//	String spatialContingencyId;
-//	
-//	List<String> pathsRegressionData;
-//	
-//	pathsRegressionData = new ArrayList<>();
-//	inputKeyMap = new HashMap<>();	
+
 
 	//////////////////////////////////////////////
 	// Attribute for the Spin generation
 	//////////////////////////////////////////////
-	HashMap<String, ISpinNetworkGenerator<? extends ADemoEntity>> networkGenerators;
+	Map<String, ISpinNetworkGenerator<? extends ADemoEntity>> networkGenerators;
 	Map<ADemoEntity, IAgent> mapEntitiesAgent;
 
 
@@ -121,19 +111,16 @@ public class GamaPopGenerator implements IValue {
 	
 	@Override
 	public String serialize(boolean includingBuiltIn) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public String stringValue(IScope scope) throws GamaRuntimeException {
-		// TODO Auto-generated method stub
+	public String stringValue(IScope scope) {
 		return null;
 	}
 
 	@Override
-	public IValue copy(IScope scope) throws GamaRuntimeException {
-		// TODO Auto-generated method stub
+	public IValue copy(IScope scope) {
 		return null;
 	}
 
@@ -157,14 +144,6 @@ public class GamaPopGenerator implements IValue {
 		this.inputAttributes = inputAttributes;
 	}
 
-//	public Map<String, IAttribute<? extends core.metamodel.value.IValue>> getInputKeyMap() {
-//		return inputKeyMap;
-//	}
-//
-//	public void setInputKeyMap(Map<String, IAttribute<? extends core.metamodel.value.IValue>> inputKeyMap) {
-//		this.inputKeyMap = inputKeyMap;
-//	}
-
 	public void setGenerationAlgorithm(String generationAlgorithm) {
 		this.generationAlgorithm = generationAlgorithm;
 	}
@@ -172,21 +151,8 @@ public class GamaPopGenerator implements IValue {
 	public void setPathNestedGeometries(String pathGeometries) {
 		this.pathNestedGeometries = pathGeometries;
 		// TODO add test si the File exist ?
-		if (pathGeometries != null)
-			setSpatializePopulation(true);
-		else
-			setSpatializePopulation(false);
+		setSpatializePopulation(pathGeometries != null);
 	}	
-
-
-//	public List<String> getPathsRegressionData() {
-//		return pathsRegressionData;
-//	}
-//
-//	public void setPathsRegressionData(List<String> pathsRegressionData) {
-//		this.pathsRegressionData = pathsRegressionData;
-//	}
-
 
 	public String getStringOfCensusIdInCSVfile() {
 		return stringOfCensusIdInCSVfile;
@@ -219,14 +185,6 @@ public class GamaPopGenerator implements IValue {
 	public void setCrs(String crs) {
 		this.crs = crs;
 	}
-//
-//	public String getSpatialContingencyId() {
-//		return spatialContingencyId;
-//	}
-//
-//	public void setSpatialContingencyId(String spatialContingencyId) {
-//		this.spatialContingencyId = spatialContingencyId;
-//	}
 	
 	@getter("attributes")
 	public IList<String> getAttributeName(){
@@ -243,26 +201,6 @@ public class GamaPopGenerator implements IValue {
 		return f;
 	}
 	
-//	@SuppressWarnings({ "rawtypes", "unchecked" })
-//	@getter("mappers")
-//	public GamaMap getMappers(){
-//		GamaMap<String, String> lm =GamaMapFactory.create(Types.STRING, Types.STRING);
-//		for (String a : this.getInputKeyMap().keySet()) {
-//			lm.put(a, this.getInputKeyMap().get(a).getAttributeName());
-//		}
-//		return lm;
-//	}
-//	
-//	@getter("spatial_mapper_file")
-//	public IList<String> getSpatialMapper(){
-//		return GamaListFactory.create(GAMA.getRuntimeScope(), Types.STRING, this.getPathsRegressionData());
-//	}
-//	@getter("spatial_matcher_file")
-//	public String getPathCensusGeometries() {
-//		return pathCensusGeometries;
-//	}
-
-
 	@getter("generation_algo")
 	public String getGenerationAlgorithm() {
 		return generationAlgorithm;
@@ -287,10 +225,7 @@ public class GamaPopGenerator implements IValue {
 	public void setPathCensusGeometries(String stringPathToCensusShapefile) {
 		this.pathCensusGeometries = stringPathToCensusShapefile;
 		
-		if (pathCensusGeometries != null)
-			setSpatializePopulation(true);
-		else
-			setSpatializePopulation(false);		
+		setSpatializePopulation(pathCensusGeometries != null);
 	}
 
 	public String getPathCensusGeometries() {
@@ -372,21 +307,16 @@ public class GamaPopGenerator implements IValue {
 		return !networkGenerators.isEmpty();
 	}
 
-
-//	public void addNetwork(String graphName, SpinNetwork network) {
-//		networks.put(graphName, network);
-//	}	
-	
 	public void addNetworkGenerator(String graphName, ISpinNetworkGenerator<? extends ADemoEntity> graphGenerator) {
 		networkGenerators.put(graphName, graphGenerator);
 	}
 	
-	public HashMap<String, ISpinNetworkGenerator<? extends ADemoEntity>> getNetworkGenerators() {
+	public Map<String, ISpinNetworkGenerator<? extends ADemoEntity>> getNetworkGenerators() {
 		return networkGenerators;
 	}
 
 
-	public void setNetworksGenerator(HashMap<String, ISpinNetworkGenerator<? extends ADemoEntity>> networksGenerator) {
+	public void setNetworksGenerator(Map<String, ISpinNetworkGenerator<? extends ADemoEntity>> networksGenerator) {
 		this.networkGenerators = networksGenerator;
 	}
 
@@ -397,8 +327,9 @@ public class GamaPopGenerator implements IValue {
 	public SpinNetwork getNetwork(String networkName) {
 		if(isSocialPopulation()) {
 			return ((SpinPopulation<?>)generatedPopulation).getNetwork(networkName);	
-		} else 
+		} else {
 			return null;
+		}
 	}
 
 	public void setGeneratedPopulation(IPopulation<? extends ADemoEntity, ?> population) {
@@ -419,12 +350,4 @@ public class GamaPopGenerator implements IValue {
 	public Collection<IAgent> getAgents() {
 		return mapEntitiesAgent.values();
 	}
-	
-/*	
-    public void setRecordAttribute(RecordAttribute<Attribute<? extends core.metamodel.value.IValue>, 
-				Attribute<? extends core.metamodel.value.IValue>> record) {
-		inputAttributes.addRecords(record);
-	}
-*/	
-
 }

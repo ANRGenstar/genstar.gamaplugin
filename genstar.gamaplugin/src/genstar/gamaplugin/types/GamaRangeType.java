@@ -4,7 +4,6 @@ import msi.gama.precompiler.IConcept;
 import msi.gama.precompiler.GamlAnnotations.doc;
 import msi.gama.precompiler.GamlAnnotations.type;
 import msi.gama.runtime.IScope;
-import msi.gama.runtime.exceptions.GamaRuntimeException;
 import msi.gama.util.GamaList;
 import msi.gaml.operators.Cast;
 import msi.gaml.types.GamaType;
@@ -12,7 +11,7 @@ import msi.gaml.types.IType;
 
 @type(name = "gen_range", id = GamaRangeType.id, wraps = { GamaRange.class }, concept = { IConcept.TYPE }, doc = @doc("The range type defined in the genstar plugin"))
 public class GamaRangeType extends GamaType<GamaRange>{
-	public final static int id = IType.AVAILABLE_TYPES + 3524246;
+	public static final int id = IType.AVAILABLE_TYPES + 3524246;
 
 	@Override
 	public boolean canCastToConst() {
@@ -22,7 +21,7 @@ public class GamaRangeType extends GamaType<GamaRange>{
 
 	@Override
 	@SuppressWarnings({ "rawtypes"})	
-	public GamaRange cast(IScope scope, Object obj, Object param, boolean copy) throws GamaRuntimeException {
+	public GamaRange cast(IScope scope, Object obj, Object param, boolean copy) {
 		if (obj instanceof GamaRange) return (GamaRange) obj;
 		if (obj instanceof GamaList) {
 			GamaList list = (GamaList) obj;
@@ -38,7 +37,6 @@ public class GamaRangeType extends GamaType<GamaRange>{
 			} 
 			return null;
 		}
-		// if(obj instanceof Gama)
 		return null;
 	}
 

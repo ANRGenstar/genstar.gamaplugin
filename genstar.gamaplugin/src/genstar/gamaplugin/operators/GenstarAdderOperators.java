@@ -3,8 +3,8 @@ package genstar.gamaplugin.operators;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Map;
 
 import core.metamodel.attribute.Attribute;
@@ -31,54 +31,13 @@ public class GenstarAdderOperators {
 	@operator(value = "add_census_file", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
 	@doc(value = "add a census data file defined by its path (string), its type (\"ContingencyTable\", \"GlobalFrequencyTable\", \"LocalFrequencyTable\" or  \"Sample\"), its separator (string), the index of the first row of data (int) and the index of the first column of data (int) to a population_generator",
 	examples = @example(value = "add_census_file(pop_gen, \"../data/Age_Couple.csv\", \"ContingencyTable\", \";\", 1, 1)", test = false))
-	public static GamaPopGenerator addCensusFile(IScope scope, GamaPopGenerator gen, String path, String type, String csvSeparator, int firstRowIndex, int firstColumnIndex) throws GamaRuntimeException {
+	public static GamaPopGenerator addCensusFile(IScope scope, GamaPopGenerator gen, String path, String type, String csvSeparator, int firstRowIndex, int firstColumnIndex) {
 		Path completePath = Paths.get(FileUtils.constructAbsoluteFilePath(scope, path, false));
 		gen.getInputFiles().add(new GSSurveyWrapper(completePath, GenStarGamaUtils.toSurveyType(type), 
 				csvSeparator.isEmpty() ? ',':csvSeparator.charAt(0), firstRowIndex, firstColumnIndex));
 		return gen;
 	}
-	
-//	@operator(value = "add_spatial_file", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-//	@doc(value = "add a spatial data file to locate the entities (nested geometries) defined by its path (string) to a population_generator",
-//	examples = @example(value = "add_spatial_file(pop_gen, \"../data/buildings.shp\")", test = false))
-//	public static GamaPopGenerator addGeographicFile(IScope scope, GamaPopGenerator gen, String path) throws GamaRuntimeException {
-//		String completePath = FileUtils.constructAbsoluteFilePath(scope, path, false);
-//		gen.setPathNestedGeometries(completePath);
-//		return gen;
-//	}
-//	
-//	@operator(value = "add_regression_file", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-//	@doc(value = "add a spatial regression data file defined by its path (string) to a population_generator",
-//	examples = @example(value = "add_regression_file(pop_gen, \"../data/landuse.tif\")", test = false))
-//	public static GamaPopGenerator addSpatialRegressionFile(IScope scope, GamaPopGenerator gen, String path) throws GamaRuntimeException {
-//		String completePath = FileUtils.constructAbsoluteFilePath(scope, path, false);
-//		gen.getPathsRegressionData().add(completePath);
-//		return gen;
-//	}
-//	
-//	@operator(value = "add_spatial_contingency_file", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-//	@doc(value = "add a spatial contingency data file defined by its path (string) and the name of the attribute containing the number used to place the entities to a population_generator",
-//	examples = @example(value = "add_spatial_contingency_file(pop_gen, \"../data/district.shp\", \"POP\")", test = false))
-//	public static GamaPopGenerator addSpatialContingencyFile(IScope scope, GamaPopGenerator gen, String path, String contingencyId) throws GamaRuntimeException {
-//		String completePath = FileUtils.constructAbsoluteFilePath(scope, path, false);
-//		gen.getPathsRegressionData().add(completePath);
-//		gen.setSpatialContingencyId(contingencyId);
-//		return gen;
-//	}
-//	
-//	
-//	@operator(value = "add_spatial_matcher", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-//	@doc(value = "add a spatial matcher data (link between the entities and the space) file defined by its path (string), the name of the key attribute in the entities and the name of the key attribute in the geographic file to a population_generator",
-//	examples = @example(value = "add_spatial_matcher(pop_gen, \"../data/iris.shp\", \"iris\",\"IRIS\")", test = false))
-//	public static GamaPopGenerator addSpatialMatcher(IScope scope, GamaPopGenerator gen, String path, String idInCensusFile, String isInShapefile) throws GamaRuntimeException {
-//		String completePath = FileUtils.constructAbsoluteFilePath(scope, path, false);
-//		gen.setPathCensusGeometries(completePath);
-//		gen.setStringOfCensusIdInCSVfile(idInCensusFile);
-//		gen.setStringOfCensusIdInShapefile(isInShapefile);
-//		return gen;
-//	}
 
-	
 	
 	@operator(value = "add_mapper", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
 	@doc(value = "add a mapper between source of data for a attribute to a population_generator. A mapper is defined by the name of the attribute, the datatype of attribute (type), the corresponding value (map<list,list>) and the type of attribute (\"unique\" or \"range\")",
@@ -103,20 +62,10 @@ public class GenstarAdderOperators {
 		Attribute<? extends IValue> referentAttribute = gen.getInputAttributes().getAttribute(referentAttributeName);
 		
 		if(referentAttribute != null) {	
-			// TODO : from GamaMap to Map ? 
-			Map<Collection<String>, Collection<String>> mapper = new Hashtable<>();
-			for (Object k : values.keySet()) {
-				Object v = values.get(scope, k);
-				if (k instanceof Collection && v instanceof Collection) {
-					Collection<String> key = new HashSet<String>((Collection)k);
-					Collection<String> val = new HashSet<String>((Collection)v);
-					mapper.put(key, val);
-				}
-			}
-			
+
 			try {	
 				String name = referentAttribute.getAttributeName() + "_" + (gen.getInputAttributes().getAttributes().size() + 1);
-				gen.getInputAttributes().addAttributes(attf.createSTSMappedAttribute(name, GenStarGamaUtils.toDataType(dataType, ordered), referentAttribute, mapper));
+				gen.getInputAttributes().addAttributes(attf.createSTSMappedAttribute(name, GenStarGamaUtils.toDataType(dataType, ordered), referentAttribute, values));
 
 				// We lose an information in the case it is an aggregatre 
 				// Si keys ont 1 seules element -> aggregation
