@@ -1,5 +1,7 @@
 package genstar.gamaplugin.utils;
 
+import java.util.Optional;
+
 import org.graphstream.graph.Edge;
 
 import core.metamodel.io.GSSurveyType;
@@ -96,11 +98,19 @@ public class GenStarGamaUtils {
 	
 	
 	public static GamaGraph<IAgent,IShape> toGAMAGraph(IScope scope, SpinNetwork net, GamaPopGenerator gen) {
-		if(gen.getAgents().isEmpty())
-			return null;
+		IType<?> nodeType ;
 		
+		Optional<IAgent> first = gen.getAgents().stream().findFirst();
+		if (first.isPresent()) {
+			nodeType = first.get().getGamlType();
+		} else {
+			return null;
+		}
+		
+//		if(gen.getAgents().isEmpty())
+//			return null;		
 //		IType<?> nodeType = gen.getAgents().stream().findFirst().orElse(null).getGamlType(); 	
-		IType<?> nodeType = gen.getAgents().stream().findFirst().get().getGamlType(); 	
+//		IType<?> nodeType = gen.getAgents().stream().findFirst().get().getGamlType(); 	
 		
 		GamaGraph<IAgent,IShape> gamaNetwork = new GamaGraph<>(scope, net.isDirected(),nodeType,Types.GEOMETRY);
 		
