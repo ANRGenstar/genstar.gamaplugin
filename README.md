@@ -1,3 +1,9 @@
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=ANRGenstar_genstar.gamaplugin&metric=bugs)](https://sonarcloud.io/dashboard?id=ANRGenstar_genstar.gamaplugin)
+
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=ANRGenstar_genstar.gamaplugin&metric=ncloc)](https://sonarcloud.io/dashboard?id=ANRGenstar_genstar.gamaplugin)
+
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=ANRGenstar_genstar.gamaplugin&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=ANRGenstar_genstar.gamaplugin)
+ 
  https://anrgenstar.github.io/genstar.gamaplugin/
 
 # Temporary install procedure in GAMA
