@@ -64,7 +64,6 @@ global {
 		pop_gen <- add_census_file(pop_gen, f_AS.path, "ContingencyTable", ";", 1, 1);
 		pop_gen <- add_census_file(pop_gen, f_IRIS.path, "ContingencyTable", ",", 1, 1);			
 		
-		
 		// --------------------------
 		// Setup "AGE" attribute: INDIVIDUAL
 		// --------------------------		
@@ -117,22 +116,32 @@ global {
 		// -------------------------
 		// Spatialization 
 		// -------------------------
+		 
 		pop_gen <- pop_gen localize_on_geometries(buildings_shp.path);
 		pop_gen <- pop_gen localize_on_census(iris_shp.path);
 		pop_gen <- pop_gen add_spatial_mapper(stringOfCensusIdInCSVfile,stringOfCensusIdInShapefile);
+		
 
 		// -------------------------
 		// Social 
 		// -------------------------
+		 
 		pop_gen <- pop_gen add_network("friends","spatial",1000.0);
 		pop_gen <- pop_gen add_network("colleagues","random",0.02);
 		
 
 		// -------------------------			
-		create people from: pop_gen number: 100 ;
-		pop_gen <- pop_gen associate_population_agents(people);
+		create people from: pop_gen number: 1000 ;
+		
+		ask people where (each.Age = 5) {
+			if flip(0.5) {do die;}
+		}
+		// pop_gen <- pop_gen associate_population_agents(people);
+		/* 
 		graph_friends <- pop_gen get_network("friends");			
-		graph_colleagues <- pop_gen get_network("colleagues");			
+		graph_colleagues <- pop_gen get_network("colleagues");
+		* 
+		*/			
 		
 	}
 }
@@ -146,12 +155,15 @@ species people {
 
 	aspect default { 
 		draw circle(4) color: #red border: #black;
+		/* 
 		loop neigh over: graph_friends neighbors_of(self) {
 			draw line([self.location,people(neigh).location]) color: #blue;
 		}
 		loop neigh over: graph_colleagues neighbors_of(self) {
 			draw line([self.location,people(neigh).location]) color: #red;
-		}		
+		}	
+		* 
+		*/	
 	}
 }
 
@@ -176,30 +188,33 @@ experiment Rouentemplate type: gui {
 			species iris;
 			species building;
 			species people;
+			graphics graphs {
+				
+			}
 		}
 		
-//		display c {
-//			chart "ages" type: histogram {
-//				loop i from: 0 to: 110 {
-//					data ""+i value: people count(each.Age = i);
-//				}
-//			}
-//		}
-//		
-//		display chart_csp {
-//			chart "csp" type: histogram {
-//				loop csp over: list_CSP {
-//					data ""+csp value: people count(each.CSP = csp);
-//				}
-//			}
-//		}		
-//		
-//		display s {
-//			chart "sex" type: pie {
-//				loop se over: ["Hommes", "Femmes"] {
-//					data se value: people count(each.Sexe = se);
-//				}
-//			}
-//		}
+		display c {
+			chart "ages" type: histogram {
+				loop i from: 0 to: 110 {
+					data ""+i value: people count(each.Age = i);
+				}
+			}
+		}
+		
+		display chart_csp {
+			chart "csp" type: histogram {
+				loop csp over: list_CSP {
+					data ""+csp value: people count(each.CSP = csp);
+				}
+			}
+		}		
+		
+		display s {
+			chart "sex" type: pie {
+				loop se over: ["Hommes", "Femmes"] {
+					data se value: people count(each.Sexe = se);
+				}
+			}
+		}
 	}
 }

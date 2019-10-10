@@ -3,6 +3,7 @@ package genstar.gamaplugin.operators;
 import genstar.gamaplugin.types.GamaPopGenerator;
 import msi.gama.precompiler.GamlAnnotations.doc;
 import msi.gama.precompiler.GamlAnnotations.example;
+import msi.gama.precompiler.GamlAnnotations.no_test;
 import msi.gama.precompiler.GamlAnnotations.operator;
 import msi.gama.runtime.IScope;
 import msi.gama.runtime.exceptions.GamaRuntimeException;
@@ -48,8 +49,9 @@ public class GenstarLocalizeOperators {
 	}	
 	
 	@operator(value = "localize_on_geometries", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-	@doc(value = "add an attribute defined by its name (string), its datatype (type), its list of values (list) to a population_generator",
-			examples = @example(value = "add_attribute(pop_gen, \"Sex\", string,[\"Man\", \"Woman\"])", test = false))
+	@doc(value = "Localize a population so each agent will be binded with a particular geometry from a GIS file (either shapefile or rasterfile)",
+			examples = @example(value = "localize_on_geometries(pop_gen, path_to_gis_file)", test = false))
+	@no_test
 	public static GamaPopGenerator localize_on_geometries(IScope scope, GamaPopGenerator gen, String stringPathToGeometriesShapefile) {
 		gen.setSpatializePopulation(true);
 		gen.setPathNestedGeometries(stringPathToGeometriesShapefile);
@@ -58,8 +60,10 @@ public class GenstarLocalizeOperators {
 	}
 
 	@operator(value = "localize_on_census", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-	@doc(value = "add an attribute defined by its name (string), its datatype (type), its list of values (list) to a population_generator",
-			examples = @example(value = "add_attribute(pop_gen, \"Sex\", string,[\"Man\", \"Woman\"])", test = false))
+	@doc(value = "Localize a population according to a mapping between a spatial entity "
+			+ "with a certain ID and the corresponding attribute ID in agent of the population",
+			examples = @example(value = "localize_on_census(pop_gen, path_to_gis_file)", test = false))
+	@no_test
 	public static GamaPopGenerator localize_on_census(IScope scope, GamaPopGenerator gen, String stringPathToCensusShapefile) {
 		gen.setSpatializePopulation(true);
 		gen.setPathCensusGeometries(stringPathToCensusShapefile);

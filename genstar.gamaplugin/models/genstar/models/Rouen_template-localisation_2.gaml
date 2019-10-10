@@ -117,7 +117,7 @@ global {
 		pop_gen <- pop_gen add_spatial_mapper(stringOfCensusIdInCSVfile,stringOfCensusIdInShapefile);
 
 		// -------------------------			
-		create people from: pop_gen number: 10000 ;
+		create people from: pop_gen ;
 	}
 }
 

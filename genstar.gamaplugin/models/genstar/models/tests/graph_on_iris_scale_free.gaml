@@ -22,7 +22,7 @@ global {
 	geometry shape <- envelope(iris_shp);
 
 	graph<people> graph_friends;
-gen_population_generator pop_gen;
+	gen_population_generator pop_gen;
 
 	init {		
 		create iris_agent from: iris_shp with: [code_iris::string(read('CODE_IRIS'))];			
@@ -67,6 +67,11 @@ gen_population_generator pop_gen;
 		pop_gen <- pop_gen associate_population_agents(people);
 		graph_friends <- pop_gen get_network("friends");		
 	}
+	
+	reflex graphLayout {
+		graph_friends <- layout_force(graph_friends, shape,0.8 ,0.1 ,1.0);
+	}
+	
 }
 
 species people {
@@ -93,7 +98,7 @@ species iris_agent {
 experiment Rouentemplate type: gui {
 	output {
 		display map type: opengl {
-			species iris_agent;
+			// species iris_agent;
 			species people;
 		}
 	}

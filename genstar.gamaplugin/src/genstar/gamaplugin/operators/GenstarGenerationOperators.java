@@ -24,6 +24,8 @@ import core.metamodel.entity.AGeoEntity;
 import core.metamodel.io.IGSGeofile;
 import core.metamodel.value.IValue;
 import core.util.excpetion.GSIllegalRangedData;
+import genstar.gamaplugin.types.GamaPopGenerator;
+import genstar.gamaplugin.utils.GenStarGamaUtils;
 import gospl.GosplEntity;
 import gospl.GosplPopulation;
 import gospl.algo.sr.ISyntheticReconstructionAlgo;
@@ -43,8 +45,9 @@ import gospl.sampler.sr.GosplBasicSampler;
 import msi.gama.metamodel.shape.GamaShape;
 import msi.gama.metamodel.shape.IShape;
 import msi.gama.precompiler.GamlAnnotations.doc;
-import msi.gama.precompiler.GamlAnnotations.operator;
 import msi.gama.precompiler.GamlAnnotations.example;
+import msi.gama.precompiler.GamlAnnotations.no_test;
+import msi.gama.precompiler.GamlAnnotations.operator;
 import msi.gama.runtime.IScope;
 import msi.gama.runtime.exceptions.GamaRuntimeException;
 import msi.gama.util.GamaListFactory;
@@ -52,8 +55,6 @@ import msi.gama.util.GamaMapFactory;
 import msi.gama.util.IList;
 import msi.gaml.operators.Spatial;
 import msi.gaml.types.Types;
-import genstar.gamaplugin.types.GamaPopGenerator;
-import genstar.gamaplugin.utils.GenStarGamaUtils;
 import spin.SpinPopulation;
 import spin.algo.generator.ISpinNetworkGenerator;
 import spll.SpllEntity;
@@ -75,6 +76,7 @@ public class GenstarGenerationOperators {
 	@operator(value = "with_generation_algo", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
 	@doc(value = "define the algorithm used for the population generation among: IS (independant hypothesis Algorothm) and simple_draw (simple draw of entities in a sample)",
 			examples = @example(value = "my_pop_generator with_generation_algo \"simple_draw\"", test = false))
+	@no_test
 	public static GamaPopGenerator withGenerationAlgo(GamaPopGenerator gen, String algo) {
 		if (gen == null) {
 			gen = new GamaPopGenerator();
@@ -83,6 +85,14 @@ public class GenstarGenerationOperators {
 		return gen;
 	}
 	
+	/**
+	 * Main methods to generate a population from a {@link GamaPopGenerator} with a given number of synthetic entities
+	 * 
+	 * @param scope
+	 * @param gen
+	 * @param targetPopulation
+	 * @return
+	 */
 	public static IPopulation<ADemoEntity, Attribute<? extends IValue>> generatePop(final IScope scope, GamaPopGenerator gen, Integer targetPopulation) {
 		if (gen == null) {
 			return null;
@@ -103,27 +113,11 @@ public class GenstarGenerationOperators {
 		
 		IPopulation<ADemoEntity, Attribute<? extends IValue>> population = new GosplPopulation();
 		
-		if ("simple_draw".equals(gen.getGenerationAlgorithm())) {
-    	
+		switch (GenStarGamaUtils.toGosplAlgorithm(gen.getGenerationAlgorithm())) {
+		
+		// DIRECT SAMPLING
+		case DS:
 			try {
-				gdb.buildSamples();
-			} catch (final RuntimeException | IOException | InvalidSurveyFormatException | InvalidFormatException e) {
-				e.printStackTrace();
-			} 
-
-    	   IPopulation p = gdb.getRawSamples().iterator().next();
-	       if (targetPopulation <= 0)
-	    	  return p;
-	       List<ADemoEntity> popSample = new ArrayList<>(p);
-	       for (int i= 0; i < targetPopulation; i++) {
-	    	   ADemoEntity ent =  popSample.get(scope.getRandom().between(0, popSample.size()-1));
-	    	   Map<Attribute<? extends IValue>, IValue> atts = ent.getAttributes().stream().collect(Collectors.toMap(a -> a, a -> ent.getValueForAttribute(a)));
-	    	   ADemoEntity entity = new GosplEntity(atts);
-	    	   population.add(entity);
-	       }
-	        
-	   } else if ("IS".equals(gen.getGenerationAlgorithm())) {
-		   try {
 			   gdb.buildDataTables();
 			} catch (final RuntimeException | IOException | InvalidSurveyFormatException | InvalidFormatException e) {
 				e.printStackTrace();
@@ -170,19 +164,61 @@ public class GenstarGenerationOperators {
 			} catch (final NumberFormatException e) {
 				e.printStackTrace();
 			}
-	   }
+			break;
+
+		// TODO : HIERARCHICAL SAMPLING
+		case HS:
+			
+			break;
+			
+		// UNIFORM SAMPLING	
+		case US:
+			
+			try {
+				gdb.buildSamples();
+			} catch (final RuntimeException | IOException | InvalidSurveyFormatException | InvalidFormatException e) {
+				e.printStackTrace();
+			} 
+
+    	   IPopulation p = gdb.getRawSamples().iterator().next();
+	       if (targetPopulation <= 0) {
+	    	   population = p;
+	       } else {
+		       List<ADemoEntity> popSample = new ArrayList<>(p);
+		       for (int i= 0; i < targetPopulation; i++) {
+		    	   ADemoEntity ent =  popSample.get(scope.getRandom().between(0, popSample.size()-1));
+		    	   Map<Attribute<? extends IValue>, IValue> atts = ent.getAttributes().stream()
+		    			   .collect(Collectors.toMap(a -> a, a -> ent.getValueForAttribute(a)));
+		    	   ADemoEntity entity = new GosplEntity(atts);
+		    	   population.add(entity);
+		       }
+	       }
+	       
+	       break;
+			
+		// TODO add all CO algorithms
+	       
+		case SA: break;
+		case TABU: break;
+		case RS: break;
+			
+		default:
+			break;
+		}
        
        if (population == null) return null;
        
-		////////////////////////////////////////////////////////////////////////
-		// Spll generation
-		////////////////////////////////////////////////////////////////////////       
+       ////////////////////////////////////////////////////////////////////////
+       // Spll generation
+       //////////////////////////////////////////////////////////////////////// 
+       
        if (gen.isSpatializePopulation())
 			population = spatializePopulation(scope, gen, population);
       
-		////////////////////////////////////////////////////////////////////////
-		// Spin generation
-		////////////////////////////////////////////////////////////////////////      
+       ////////////////////////////////////////////////////////////////////////
+       // Spin generation
+       ////////////////////////////////////////////////////////////////////////
+       
        if (gen.isSocialPopulation())
 			population = socializePopulation(scope, gen, population);
        

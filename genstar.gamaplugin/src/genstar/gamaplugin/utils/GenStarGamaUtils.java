@@ -1,5 +1,7 @@
 package genstar.gamaplugin.utils;
 
+import java.util.Arrays;
+
 import org.graphstream.graph.Edge;
 
 import core.metamodel.io.GSSurveyType;
@@ -12,7 +14,7 @@ import core.util.data.GSEnumDataType;
 import genstar.gamaplugin.types.GamaPopGenerator;
 import genstar.gamaplugin.types.GamaRange;
 import genstar.gamaplugin.types.GamaRangeType;
-
+import gospl.algo.IGosplConcept;
 import msi.gama.metamodel.agent.IAgent;
 import msi.gama.metamodel.shape.IShape;
 import msi.gama.runtime.IScope;
@@ -32,6 +34,16 @@ public class GenStarGamaUtils {
 		if (type.equals("LocalFrequencyTable"))
 			return GSSurveyType.LocalFrequencyTable;
 		return GSSurveyType.Sample;
+	}
+	
+	public static IGosplConcept.EGosplAlgorithm toGosplAlgorithm(String algo){
+		if (Arrays.asList("Direct Sampling","DS","IS").stream().anyMatch(elem -> elem.equalsIgnoreCase(algo)))
+			return IGosplConcept.EGosplAlgorithm.DS;
+		if (Arrays.asList("Hierarchical Sampling","HS").stream().anyMatch(elem -> elem.equalsIgnoreCase(algo)))
+			return IGosplConcept.EGosplAlgorithm.HS;
+		if (Arrays.asList("Uniform Sampling","US","simple_draw").stream().anyMatch(elem -> elem.equalsIgnoreCase(algo)))
+			return IGosplConcept.EGosplAlgorithm.US;
+		return null;
 	}
 	
 	@SuppressWarnings("rawtypes")

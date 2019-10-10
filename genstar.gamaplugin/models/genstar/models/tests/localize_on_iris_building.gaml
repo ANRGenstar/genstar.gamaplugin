@@ -9,6 +9,7 @@ model localizeiris
 
 global {
 	file f_IRIS <- file("../../data/Rouen_iris.csv");
+	file sample_iris <- file("../../data/Rouen_sample_iris.csv");
 	file iris_shp <- file("../../data/shp/Rouen_iris_number.shp");
 
 	// String constants
@@ -23,6 +24,7 @@ global {
 	//path to the file that will be used as support for the spatial regression (bring additional spatial data)
 //	string stringPathToLandUseGrid <- "../../data/raster/occsol_rouen.tif";
 
+	bool sample_based parameter:true init:true;
 
 	geometry shape <- envelope(buildings_shp);
 
@@ -31,9 +33,16 @@ global {
 		create iris_agent from: iris_shp with: [code_iris::string(read('CODE_IRIS'))];			
 		
 		gen_population_generator pop_gen;
-		pop_gen <- pop_gen with_generation_algo "IS";  //"Sample";//"IS";
-
-		pop_gen <- add_census_file(pop_gen, f_IRIS.path, "ContingencyTable", ",", 1, 1);			
+		
+		if sample_based {
+			write "CO uniform sampling algorithm";
+			pop_gen <- pop_gen with_generation_algo "Uniform Sampling";
+			pop_gen <- add_census_file(pop_gen, sample_iris.path, "Sample", ",", 1, 0);
+		}  else {
+			write "SR direct sampling algorithm";
+			pop_gen <- pop_gen with_generation_algo "Direct Sampling"; 
+			pop_gen <- add_census_file(pop_gen, f_IRIS.path, "ContingencyTable", ",", 1, 1);
+		}			
 			
 		// -------------------------
 		// Setup "IRIS" attribute: INDIVIDUAL
@@ -50,17 +59,18 @@ global {
 			"765400404","765400105","765401002","765400902","765400403",
 			"765400203","765400101","765400205"];
 		
-		pop_gen <- pop_gen add_attribute("iris", string, liste_iris, "P13_POP", int);  
+		pop_gen <- pop_gen add_attribute("iris", string, liste_iris, (sample_based?"iris":"P13_POP"), int);  
 		
 		// -------------------------
 		// Spatialization 
 		// -------------------------
 		pop_gen <- pop_gen localize_on_geometries(buildings_shp.path);
 		pop_gen <- pop_gen localize_on_census(iris_shp.path);
+		
 		pop_gen <- pop_gen add_spatial_mapper(stringOfCensusIdInCSVfile,stringOfCensusIdInShapefile);
 
 		// -------------------------			
-		create people from: pop_gen number: 10000 ;
+		create people from: pop_gen;
 	}
 }
 

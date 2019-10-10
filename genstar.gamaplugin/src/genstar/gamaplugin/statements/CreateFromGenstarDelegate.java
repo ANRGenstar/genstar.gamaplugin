@@ -110,7 +110,8 @@ public class CreateFromGenstarDelegate implements ICreateDelegate {
         		IVariable var = gama_pop.getVar(attribute.getAttributeName());
         		Object attributeValue;
         		Attribute attributeToPut = attribute;
-        		// if the Attribute does not correspond to a variable, and if it is a MappedAttribute, try to get the Variable corresponding to the ReferentAttribute
+        		// if the Attribute does not correspond to a variable, and if it is a MappedAttribute, 
+        		// try to get the Variable corresponding to the ReferentAttribute
         		if(var == null) {
         			if (attribute instanceof MappedAttribute) {
                 		Attribute referent_attribute = ((MappedAttribute) attribute).getReferentAttribute();
