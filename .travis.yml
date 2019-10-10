@@ -20,10 +20,10 @@ addons:
   sonarcloud:
     organization: "anrgenstar"
     token:
-      secure: "yn1bxhZigtOENjIFgNq5uqsk3VNCDfdkvSJIHNVgqtbOtgKunNpKQfJbSCJrRZTPua5GnawYMSCcPD4DSNrnscPFsKYckROOBi3ib5h2Bb7NQEUIc3SKTgDa1a5rdrBe516bS43LDVMHmItvgc5ez0CkFFppS8E1/2xHdrWkfFuZcoTi6AVlHh2gwLotVaUlBLJPzMfrsVrWZ7TARDz4sB5F0M7zJBRUUOxmv4ZL2DfzqTNqdCEiWF+X12OJIXr/0qlp/R63x4v4nvOXGAT1UA9kEHLD7GxsgKlsEY/Jnwo5hNfqg15i7bCmiYl6JYUC0my3hKcfL0QyidzuyS7c2eBaVB5pFgCaQuNpQ7djYPMj7yTRqoTDB0MnV4RCi+BMZjH02vM0XA1B9W5jIP3pOeszkLeaybQHB5pwnnbcknSMKOLoJ3sV3anh4h6X4hjo7N3dcLQFxXEe0OoIl8zXRu5Y20z2Q5VQPdwX8B/k8MW/RrJjB1JHUV7vNUP38S2Q0TtZcIFciqMncSctYNv7nfxR4mnL++pdUBU83tNJYDzHgzwYgwJhPCXZvvstDsTUfFH4uHp6gjXJfD/GqP4VGuUpPDFzghSbQhybRlsUgPjLGxuqwXXJp5M+otOVP/XdOVzSA5kEXZyIJehDp+hUUR3/YNaPnzvBbyoCJWaCbBc=" # encrypted value of your token
+      secure: "1k1XotYg20QAfK5l11P8CqQ8NtDh5PtN5ZJV2hKR9KvyCuot+ly8MtJYB3CJ7hqh4XFiL1Ap5gY+Guq3XC908Qmj7STtTnowa/Jwb/SYIFckKZHcpuJX5kcN8BYNxPCTi/X1AAWaOMSCJdXiIIcfIhe174dewkoehFyaeS1qpSUlKlsmqh6HjjIGnByQUxeZqHR+umbPU2ea0O0bWKWTwFOK36MjPx6Idl5GopGMy+npdG97zjVOnwZw6J91DAIx7UKQJBlvTTITD/twUARd5FN6TJSPxIvcH1hWi9IKR+jR423KVqt2DnTLqmIU1m66o5qCSbUgtc4M1BSxJiv/EQsfIk8EndpwSFQqGVJrdMMHcCnXLune6uWDavjYC/dGYyDfPOgbJOLtqdrl7ysEKPJFg4SKI1WSDul3Y4kUT/ESWVmfZbQYwWP3oLwjYl0hHXS48quDUc0skYf1dO9bhuMHKDzFJnG0vAg4Ms4ecobQKGxqjlT4x7HrKjcGsOW4SbFvtJYThSmkp7W5RALiI2JUi1TxFL0d7AHZILlMZtMv4JB6o5pO/4BwvSJdTqZkFqS9wYtavjo8f7eTXgGi2y+ontJT1Q8zCyruuAOBtrqt0fgVKlHrkO86e8oPnrSpnVtkls4jPJ1vUd0mi4LGWhhbXojnkUtEB7TiAGLSrQE=" # encrypted value of your token
 script:
   - cd genstar.gamaplugin.parent
-  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.branch=master -Dsonar.projectKey=ANRGenstar_genstar.gamaplugin
+  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=ANRGenstar_genstar.gamaplugin
   - cd -
 after_success:
 - echo -e "Host *\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config

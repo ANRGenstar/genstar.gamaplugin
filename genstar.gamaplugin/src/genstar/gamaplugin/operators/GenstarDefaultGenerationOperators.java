@@ -15,6 +15,7 @@ import msi.gama.metamodel.shape.IShape;
 import msi.gama.precompiler.GamlAnnotations.doc;
 import msi.gama.precompiler.GamlAnnotations.operator;
 import msi.gama.runtime.IScope;
+import msi.gama.runtime.exceptions.GamaRuntimeException;
 import msi.gama.util.IList;
 
 public class GenstarDefaultGenerationOperators {
@@ -30,7 +31,7 @@ public class GenstarDefaultGenerationOperators {
 			atts.addAttributes(AttributeFactory.getFactory()
 					.createAttribute("iris", GSEnumDataType.Nominal, Arrays.asList("765400102", "765400101")));
 		} catch (GSIllegalRangedData e1) {
-			e1.printStackTrace();
+			throw GamaRuntimeException.error("Wrong type for the record. " + e1.getMessage(), scope);
 		}
 		
 		GSUtilGenerator ug = new GSUtilGenerator(atts);

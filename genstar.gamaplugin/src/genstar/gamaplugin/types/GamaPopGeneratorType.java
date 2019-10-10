@@ -16,7 +16,6 @@ import msi.gama.precompiler.GamlAnnotations.type;
 import msi.gama.precompiler.IConcept;
 import msi.gama.precompiler.ISymbolKind;
 import msi.gama.runtime.IScope;
-import msi.gama.runtime.exceptions.GamaRuntimeException;
 import msi.gaml.types.GamaType;
 
 @type(name = "gen_population_generator", id = 938373948, wraps = {
@@ -34,8 +33,7 @@ public class GamaPopGeneratorType extends GamaType<GamaPopGenerator> {
 	}
 
 	@Override
-	public GamaPopGenerator cast(final IScope scope, final Object obj, final Object param, final boolean copy)
-			throws GamaRuntimeException {
+	public GamaPopGenerator cast(final IScope scope, final Object obj, final Object param, final boolean copy) {
 		if (obj instanceof GamaPopGenerator) {
 			return (GamaPopGenerator) obj;
 		}

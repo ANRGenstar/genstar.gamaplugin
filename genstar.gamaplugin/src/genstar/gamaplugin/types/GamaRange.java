@@ -9,7 +9,6 @@ import msi.gama.precompiler.GamlAnnotations.getter;
 import msi.gama.precompiler.GamlAnnotations.variable;
 import msi.gama.precompiler.GamlAnnotations.vars;
 import msi.gama.runtime.IScope;
-import msi.gama.runtime.exceptions.GamaRuntimeException;
 import msi.gaml.types.IType;
 
 @vars({ 
@@ -18,7 +17,8 @@ import msi.gaml.types.IType;
 	})
 public class GamaRange implements IValue{
 
-	Number min; Number max;
+	Number min; 
+	Number max;
 	
 	public GamaRange(Number min, Number max) {
 		this.min = min;
@@ -41,7 +41,7 @@ public class GamaRange implements IValue{
 	}
 
 	@Override
-	public String stringValue(IScope scope) throws GamaRuntimeException {
+	public String stringValue(IScope scope) {
 		return serialize(true);
 	}
 	
@@ -50,7 +50,7 @@ public class GamaRange implements IValue{
 	}
 
 	@Override
-	public IValue copy(IScope scope) throws GamaRuntimeException {
+	public IValue copy(IScope scope) {
 		return new GamaRange(min, max);
 	}
 	

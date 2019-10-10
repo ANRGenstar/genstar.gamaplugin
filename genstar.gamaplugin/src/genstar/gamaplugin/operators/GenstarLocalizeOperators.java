@@ -33,26 +33,25 @@ public class GenstarLocalizeOperators {
 	}		
 
 	@operator(value = "localize_around_at", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-	public static GamaPopGenerator localize_around_at(IScope scope, GamaPopGenerator gen, Double max) {
-		return localize_around_at(scope, gen, 0.0, max, false);
+	public static GamaPopGenerator localizeAroundAt(IScope scope, GamaPopGenerator gen, Double max) {
+		return localizeAroundAt(scope, gen, 0.0, max, false);
 	}		
 	
 	@operator(value = "localize_around_at", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-	public static GamaPopGenerator localize_around_at(IScope scope, GamaPopGenerator gen, Double min, Double max) {
-		return localize_around_at(scope,gen,min,max,false);
+	public static GamaPopGenerator localizeAroundAt(IScope scope, GamaPopGenerator gen, Double min, Double max) {
+		return localizeAroundAt(scope,gen,min,max,false);
 	}		
 	
 	@operator(value = "localize_around_at", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-	public static GamaPopGenerator localize_around_at(IScope scope, GamaPopGenerator gen, Double min, Double max, boolean overlaps) {
+	public static GamaPopGenerator localizeAroundAt(IScope scope, GamaPopGenerator gen, Double min, Double max, boolean overlaps) {
 		gen.setLocalizedAround(min, max, overlaps);		
 		return gen;
 	}	
 	
 	@operator(value = "localize_on_geometries", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-	@doc(value = "Localize a population so each agent will be binded with a particular geometry from a GIS file (either shapefile or rasterfile)",
-			examples = @example(value = "localize_on_geometries(pop_gen, path_to_gis_file)", test = false))
-	@no_test
-	public static GamaPopGenerator localize_on_geometries(IScope scope, GamaPopGenerator gen, String stringPathToGeometriesShapefile) {
+	@doc(value = "add an attribute defined by its name (string), its datatype (type), its list of values (list) to a population_generator",
+			examples = @example(value = "add_attribute(pop_gen, \"Sex\", string,[\"Man\", \"Woman\"])", test = false))
+	public static GamaPopGenerator localizeOnGeometries(IScope scope, GamaPopGenerator gen, String stringPathToGeometriesShapefile) {
 		gen.setSpatializePopulation(true);
 		gen.setPathNestedGeometries(stringPathToGeometriesShapefile);
 		
@@ -60,11 +59,9 @@ public class GenstarLocalizeOperators {
 	}
 
 	@operator(value = "localize_on_census", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-	@doc(value = "Localize a population according to a mapping between a spatial entity "
-			+ "with a certain ID and the corresponding attribute ID in agent of the population",
-			examples = @example(value = "localize_on_census(pop_gen, path_to_gis_file)", test = false))
-	@no_test
-	public static GamaPopGenerator localize_on_census(IScope scope, GamaPopGenerator gen, String stringPathToCensusShapefile) {
+	@doc(value = "add an attribute defined by its name (string), its datatype (type), its list of values (list) to a population_generator",
+			examples = @example(value = "add_attribute(pop_gen, \"Sex\", string,[\"Man\", \"Woman\"])", test = false))
+	public static GamaPopGenerator localizeOnCensus(IScope scope, GamaPopGenerator gen, String stringPathToCensusShapefile) {
 		gen.setSpatializePopulation(true);
 		gen.setPathCensusGeometries(stringPathToCensusShapefile);
 		

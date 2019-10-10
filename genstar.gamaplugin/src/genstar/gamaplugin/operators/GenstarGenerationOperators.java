@@ -120,16 +120,16 @@ public class GenstarGenerationOperators {
 			try {
 			   gdb.buildDataTables();
 			} catch (final RuntimeException | IOException | InvalidSurveyFormatException | InvalidFormatException e) {
-				e.printStackTrace();
+				throw GamaRuntimeException.error("Error in building dataTable for the IS algorithm. "+e.getMessage(), scope);
 			}
 
 			INDimensionalMatrix<Attribute<? extends IValue>, IValue, Double> distribution = null;
 			try {
 				distribution = gdb.collapseDataTablesIntoDistribution();
 			} catch (final IllegalDistributionCreation e1) {
-				e1.printStackTrace();
+				throw GamaRuntimeException.error("Error of distribution creation in collapsing DataTable into distibution for the IS algorithm. "+e1.getMessage(), scope);
 			} catch (final IllegalControlTotalException e1) {
-				e1.printStackTrace();
+				throw GamaRuntimeException.error("Error of control in collapsing DataTable into distibution for the IS algorithm. "+e1.getMessage(), scope);
 			}
 			
 			// BUILD THE SAMPLER WITH THE INFERENCE ALGORITHM
@@ -138,7 +138,7 @@ public class GenstarGenerationOperators {
 			try {
 				sampler = distributionInfAlgo.inferSRSampler(distribution, new GosplBasicSampler());
 			} catch (final IllegalDistributionCreation e1) {
-				e1.printStackTrace();
+				throw GamaRuntimeException.error("Error of distribution creation in infering the sampler for the IS algorithm. "+e1.getMessage(), scope);
 			}
 			
 			if (targetPopulation < 0) {
@@ -162,7 +162,7 @@ public class GenstarGenerationOperators {
 				population = ispGenerator.generate(targetPopulation);
 				
 			} catch (final NumberFormatException e) {
-				e.printStackTrace();
+				throw GamaRuntimeException.error("Wrong number format. " + e.getMessage(), scope);
 			}
 			break;
 
@@ -220,7 +220,7 @@ public class GenstarGenerationOperators {
        ////////////////////////////////////////////////////////////////////////
        
        if (gen.isSocialPopulation())
-			population = socializePopulation(scope, gen, population);
+    	   population = socializePopulation(gen, population);
        
 		return population;
 	}
@@ -251,9 +251,10 @@ public class GenstarGenerationOperators {
         		entity = new GamaShape(gen.getCrs() != null ?
 						Spatial.Projections.to_GAMA_CRS(scope, new GamaShape(newE.getLocation()), gen.getCrs())
 						: Spatial.Projections.to_GAMA_CRS(scope, new GamaShape(newE.getLocation())));
-        	} else 
+        	} else {
         		entity = new GamaShape(Spatial.Punctal.any_location_in(scope, scope.getRoot().getGeometry()));
-            		
+        	}
+        	
         	for (final Attribute<? extends IValue> attribute : attributes) {
         		 entity.setAttribute(attribute.getAttributeName(), GenStarGamaUtils.toGAMAValue(scope,e.getValueForAttribute(attribute), true));
         	  }
@@ -280,9 +281,10 @@ public class GenstarGenerationOperators {
         		entity = new GamaShape(crs != null ? 
 						Spatial.Projections.to_GAMA_CRS(scope, new GamaShape(newE.getLocation()), crs)
 						: Spatial.Projections.to_GAMA_CRS(scope, new GamaShape(newE.getLocation())));
-        	} else 
+        	} else {
         		entity = new GamaShape(Spatial.Punctal.any_location_in(scope, scope.getRoot().getGeometry()));
-            		
+        	}
+        	
         	for (final Attribute<? extends IValue> attribute : attributes)
                 entity.setAttribute(attribute.getAttributeName(), GenStarGamaUtils.toGAMAValue(scope, e.getValueForAttribute(attribute), true));
             entities.add(entity);
@@ -313,7 +315,7 @@ public class GenstarGenerationOperators {
         if (number > 0 && number < es.size()) es = scope.getRandom().shuffle(es);
         for (final ADemoEntity e : es) {
         	
-        	Map entity =(Map) GamaMapFactory.create();
+        	Map entity = GamaMapFactory.create();
         	 		
         	for (final Attribute<? extends IValue> attribute : attributes) {
                 final String name = attribute.getAttributeName();
@@ -386,11 +388,11 @@ public class GenstarGenerationOperators {
 				if (pathF.exists())
 					endogeneousVarFile.add(new SPLGeofileBuilder().setFile(pathF).buildGeofile());
 			} catch ( IOException | IllegalArgumentException | TransformException | InvalidGeoFormatException | GSIllegalRangedData e) {
-				e.printStackTrace();
+				throw GamaRuntimeException.error("Error in setuping the regression. "+e.getMessage(), scope);
 			}
 		}		
 		
-		if (endogeneousVarFile != null && !endogeneousVarFile.isEmpty())
+		if (!endogeneousVarFile.isEmpty())
 			try {
 				// TODO cntingency ID ????? 
 //				if (gen.getSpatialContingencyId() != null && !gen.getSpatialContingencyId().isEmpty()) {
@@ -402,86 +404,19 @@ public class GenstarGenerationOperators {
 				
 			} catch (IndexOutOfBoundsException | IllegalRegressionException 
 					| IllegalArgumentException | IOException | TransformException 
-					| InterruptedException | ExecutionException | GSMapperException 
+					| ExecutionException | GSMapperException 
 					| SchemaException | InvalidGeoFormatException e) {
-				e.printStackTrace();
-			} 	
+				throw GamaRuntimeException.error(e.getMessage(), scope);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			} 
 		
 		//localize the population
-		SpllPopulation localizedPop = localizer.localisePopulation();
-		
-		return localizedPop;
+		return localizer.localisePopulation();		
 	}
 	
 	
-	
-//	private static IPopulation spatializePopulation(GamaPopGenerator gen, IPopulation population) {
-//	
-//		File sfGeomsF = gen.getPathNestedGeometries() == null ? null : new File(gen.getPathNestedGeometries());
-//		
-//		if (sfGeomsF != null && !sfGeomsF.exists()) return population;
-//		
-//		SPLVectorFile sfGeoms = null;
-//		SPLVectorFile sfCensus = null;
-//
-//		File sfCensusF = gen.getPathCensusGeometries() == null ? null : new File(gen.getPathCensusGeometries());
-//		
-//		try {
-//			sfGeoms = SPLGeofileBuilder.getShapeFile(sfGeomsF, null);
-//			if (sfCensusF != null && sfCensusF.exists())
-//				sfCensus = SPLGeofileBuilder.getShapeFile(sfCensusF, null);
-//		} catch (IOException | InvalidGeoFormatException | GSIllegalRangedData e) {
-//			e.printStackTrace();
-//		} 
-//		
-//		gen.setCrs(sfGeoms.getWKTCoordinateReferentSystem());
-//		List<IGSGeofile<? extends AGeoEntity<? extends IValue>, ? extends IValue>> endogeneousVarFile = new ArrayList<>();
-//		for(String path : gen.getPathsRegressionData()){
-//			try {
-//				File pathF = new File(path);
-//				if (pathF.exists())
-//					endogeneousVarFile.add(new SPLGeofileBuilder().setFile(pathF).buildGeofile());
-//			} catch (IllegalArgumentException | TransformException | IOException | InvalidGeoFormatException | GSIllegalRangedData e2) {
-//				e2.printStackTrace();
-//			}
-//		}
-//		
-//		
-//		// SETUP THE LOCALIZER
-//		// 2) SPUniformLocalizer est un SPLocalizer qui utilise une SPLinker avec une ISpatialDistribution uniforme 
-//
-//		//SPUniformLocalizer localizer = new SPUniformLocalizer(new SpllPopulation(population, sfGeoms));
-//		// cf. Bangkok ... 
-//		IGSGeofile<? extends AGeoEntity<? extends IValue>, IValue> geoFile = null;
-//
-//		SPLocalizer localizer = new SPLocalizer(population, geoFile);
-//
-//		// SETUP GEOGRAPHICAL MATCHER
-//		// use of the IRIS attribute of the population
-//		if (sfCensus != null)
-//			localizer.setMatcher(sfCensus, gen.getStringOfCensusIdInCSVfile(), gen.getStringOfCensusIdInShapefile());
-//		
-//		// SETUP REGRESSION
-//		if (endogeneousVarFile != null && !endogeneousVarFile.isEmpty())
-//			try {
-//				if (gen.getSpatialContingencyId() != null && !gen.getSpatialContingencyId().isEmpty()) {
-//					localizer.setMapper(endogeneousVarFile.get(0), gen.getSpatialContingencyId());
-//				
-//				}
-//				else if (sfCensus != null)
-//					localizer.setMapper(endogeneousVarFile, new ArrayList<>(), 
-//						new LMRegressionOLS(), new SPLUniformNormalizer(0, SPLRasterFile.DEF_NODATA));
-//				
-//			} catch (IndexOutOfBoundsException | IllegalRegressionException e) {
-//				e.printStackTrace();
-//			} 
-//
-//		//localize the population
-//		return localizer.localisePopulation();
-//	}
-	
-	
-	private static IPopulation socializePopulation(IScope scope, GamaPopGenerator gen, IPopulation population) {
+	private static IPopulation socializePopulation(GamaPopGenerator gen, IPopulation population) {
 		SpinPopulation socializedPop = new SpinPopulation<>(population);
 		
 		for(Entry<String,ISpinNetworkGenerator<? extends ADemoEntity>> e : gen.getNetworkGenerators().entrySet()) {

@@ -1,4 +1,11 @@
- https://anrgenstar.github.io/genstar.gamaplugin/
+[![GitHub license](https://img.shields.io/github/license/gama-platform/gama-platform.github.io)](https://github.com/gama-platform/gama-platform.github.io/blob/sources/LICENSE)
+[![Language](http://img.shields.io/badge/language-java-brightgreen.svg)](https://www.java.com/)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=ANRGenstar_genstar.gamaplugin&metric=ncloc)](https://sonarcloud.io/dashboard?id=ANRGenstar_genstar.gamaplugin)
+
+[![Build Status](https://travis-ci.org/ANRGenstar/genstar.gamaplugin.svg?branch=master)](https://travis-ci.org/ANRGenstar/genstar.gamaplugin)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=ANRGenstar_genstar.gamaplugin&metric=bugs)](https://sonarcloud.io/dashboard?id=ANRGenstar_genstar.gamaplugin)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=ANRGenstar_genstar.gamaplugin&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=ANRGenstar_genstar.gamaplugin)
+ 
 
 # Temporary install procedure in GAMA
 

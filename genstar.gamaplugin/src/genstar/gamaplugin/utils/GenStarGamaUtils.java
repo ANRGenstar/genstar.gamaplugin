@@ -1,6 +1,6 @@
 package genstar.gamaplugin.utils;
 
-import java.util.Arrays;
+import java.util.Optional;
 
 import org.graphstream.graph.Edge;
 
@@ -62,7 +62,7 @@ public class GenStarGamaUtils {
 		return GSEnumDataType.Nominal; 
 	}
 
-	static public Object toGAMAValue(IScope scope, IValue val, boolean checkEmpty) {
+	public static Object toGAMAValue(IScope scope, IValue val, boolean checkEmpty) {
 		GSEnumDataType type= val.getType();
 		if (checkEmpty && val.equals(val.getValueSpace().getEmptyValue())) return toGAMAValue(scope, val.getValueSpace().getEmptyValue(), false);
 		if (type == GSEnumDataType.Boolean) {
@@ -86,16 +86,6 @@ public class GenStarGamaUtils {
 		RangeValue rVal = (RangeValue) val;
 		return new GamaRange(rVal.getBottomBound().doubleValue(), rVal.getTopBound().doubleValue());
 	}
-	
-	// TODO Ben : à remettre si le précédent ne marche pas :-)
-//	static GamaRange toGAMARange(IValue val) {
-//		
-//		Number[] vals = ((RangeValue) val).getActualValue();
-//		if (vals.length == 0) return null;
-//		Number rangeMin = vals[0];
-//		Number rangeMax = vals.length > 1 ? vals[1] : Double.MAX_VALUE;
-//		return new GamaRange(rangeMin.doubleValue(), rangeMax.doubleValue());
-//	}
 
 	@SuppressWarnings("rawtypes")
 	public static Object toGAMAValue(IScope scope, IValue valueForAttribute, boolean checkEmpty, IType type) {
@@ -108,10 +98,15 @@ public class GenStarGamaUtils {
 	
 	
 	public static GamaGraph<IAgent,IShape> toGAMAGraph(IScope scope, SpinNetwork net, GamaPopGenerator gen) {
-		if(gen.getAgents().isEmpty())
-			return null;
+		IType<?> nodeType ;
 		
-		IType<?> nodeType = gen.getAgents().stream().findFirst().orElse(null).getGamlType(); 	
+		Optional<IAgent> first = gen.getAgents().stream().findFirst();
+		if (first.isPresent()) {
+			nodeType = first.get().getGamlType();
+		} else {
+			return null;
+		}
+		
 		GamaGraph<IAgent,IShape> gamaNetwork = new GamaGraph<>(scope, net.isDirected(),nodeType,Types.GEOMETRY);
 		
 		for(IAgent agt : gen.getAgents()) {
