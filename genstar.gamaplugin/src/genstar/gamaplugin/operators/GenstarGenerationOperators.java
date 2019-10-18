@@ -227,13 +227,17 @@ public class GenstarGenerationOperators {
 
 
 	@operator(value = "generate_localized_entities", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-	@doc(value = "generate a spatialized population taking the form of a list of geometries while trying to infer the entities number from the data", examples = @example(value = "generateLocalizedEntities(my_pop_generator)", test = false))
+	@doc(value = "generate a spatialized population taking the form of a list of geometries while trying to infer the entities number from the data", 
+		examples = @example(value = "generateLocalizedEntities(my_pop_generator)", test = false))
+	@no_test
 	public static IList<IShape> generateLocalizedEntities(final IScope scope,GamaPopGenerator gen) {
 		return generateLocalizedEntities(scope,gen, null);
 	}
 	
 	@operator(value = "generate_localized_entities", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-	@doc(value = "generate a population composed of the given number of entities taking the form of a list of geometries", examples = @example(value = "generateLocalizedEntities(my_pop_generator, 1000)", test = false))
+	@doc(value = "generate a population composed of the given number of entities taking the form of a list of geometries", 
+		examples = @example(value = "generateLocalizedEntities(my_pop_generator, 1000)", test = false))
+	@no_test
 	public static IList<IShape> generateLocalizedEntities(final IScope scope,GamaPopGenerator gen, Integer number) {
 		if (number == null) number = -1;
 		IPopulation<? extends ADemoEntity, Attribute<? extends IValue>> population = generatePop(scope, gen, number);
@@ -296,13 +300,18 @@ public class GenstarGenerationOperators {
 	
 	
 	@operator(value = "generate_entities", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-	@doc(value = "generate a population taking the form of of a list of map (each map representing an entity) while trying to infer the entities number from the data", examples = @example(value = "generate_entities(my_pop_generator)", test = false))
+	@doc(value = "generate a population taking the form of of a list of map (each map representing an entity) "
+			+ "while trying to infer the entities number from the data", 
+			examples = @example(value = "generate_entities(my_pop_generator)", test = false))
+	@no_test
 	public static IList<Map> generateEntities(final IScope scope,GamaPopGenerator gen) {
 		return generateEntities(scope, gen, null);
 	}
 	
 	@operator(value = "generate_entities", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-	@doc(value = "generate a population composed of the given number of entities taking the form of a list of map: each map representing an entity", examples = @example(value = "generate_entities(my_pop_generator, 1000)", test = false))
+	@doc(value = "generate a population composed of the given number of entities taking the form of a list of map: each map representing an entity", 
+		examples = @example(value = "generate_entities(my_pop_generator, 1000)", test = false))
+	@no_test
 	public static IList<Map> generateEntities(final IScope scope,GamaPopGenerator gen, Integer number) {
 		if (number == null) number = -1;
 		IPopulation<? extends ADemoEntity, Attribute<? extends IValue>> population = generatePop(scope, gen, number);

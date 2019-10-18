@@ -1,6 +1,8 @@
 package genstar.gamaplugin.operators;
 
 import genstar.gamaplugin.types.GamaPopGenerator;
+import genstar.gamaplugin.utils.GenStarConstant.SpatialDistribution;
+import genstar.gamaplugin.utils.GenStarGamaUtils;
 import msi.gama.precompiler.GamlAnnotations.doc;
 import msi.gama.precompiler.GamlAnnotations.example;
 import msi.gama.precompiler.GamlAnnotations.no_test;
@@ -10,6 +12,7 @@ import msi.gama.runtime.exceptions.GamaRuntimeException;
 
 
 public class GenstarLocalizeOperators {
+	
 	@operator(value = "add_spatial_mapper", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
 	public static GamaPopGenerator addSpatialMapper(IScope scope, GamaPopGenerator gen, String stringOfCensusIdInCSVfile, String stringOfCensusIdInShapefile) {
 		if(gen.getPathCensusGeometries() == null ) {
@@ -21,10 +24,33 @@ public class GenstarLocalizeOperators {
 	}	
 	
 	@operator(value = "add_spatial_distribution", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
+	@doc(value = "Define the spatial distribution to be used to localize synthetic entities",
+		examples = @example(value = "my_pop_generator add_spatial_distribution \"area\"", test = false))
+	@no_test
 	public static GamaPopGenerator addSpatialDistribution(IScope scope, GamaPopGenerator gen, String distribution) {
-		gen.setSpatialDistribution(distribution);
+		gen.setSpatialDistribution(GenStarGamaUtils.toSpatialDistribution(distribution));
 		return gen;
-	}	
+	}
+	
+	@operator(value = "add_capacity_distribution", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
+	@doc(value = "Define the spatial distribution to of capacity type with a constant number of maximum synthetic entities per spatial entity",
+		examples = @example(value = "my_pop_generator add_spatial_distribution \"area\"", test = false))
+	@no_test
+	public static GamaPopGenerator addCapacityDistribution(IScope scope, GamaPopGenerator gen, int capacity) {
+		gen.setSpatialDistribution(SpatialDistribution.CAPACITY);
+		gen.setSpatialDistributionCapacity(capacity);
+		return gen;
+	}
+	
+	@operator(value = "add_capacity_distribution", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
+	@doc(value = "Define the spatial distribution to of capacity type. The capacity is given in each spatial entity by a specified feature",
+		examples = @example(value = "my_pop_generator add_spatial_distribution \"area\"", test = false))
+	@no_test
+	public static GamaPopGenerator addCapacityDistribution(IScope scope, GamaPopGenerator gen, String featureName) {
+		gen.setSpatialDistribution(SpatialDistribution.CAPACITY);
+		gen.setSpatialDistributionCapacityFeature(featureName);
+		return gen;
+	}
 	
 	@operator(value = "add_ancilary_geofile", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
 	public static GamaPopGenerator addAncilaryGeoFiles(IScope scope, GamaPopGenerator gen, String pathToFile) {

@@ -14,6 +14,9 @@ import core.util.data.GSEnumDataType;
 import genstar.gamaplugin.types.GamaPopGenerator;
 import genstar.gamaplugin.types.GamaRange;
 import genstar.gamaplugin.types.GamaRangeType;
+import genstar.gamaplugin.utils.GenStarConstant.GenerationAlgorithm;
+import genstar.gamaplugin.utils.GenStarConstant.InputDataType;
+import genstar.gamaplugin.utils.GenStarConstant.SpatialDistribution;
 import gospl.algo.IGosplConcept;
 import msi.gama.metamodel.agent.IAgent;
 import msi.gama.metamodel.shape.IShape;
@@ -21,27 +24,51 @@ import msi.gama.runtime.IScope;
 import msi.gama.util.graph.GamaGraph;
 import msi.gaml.types.IType;
 import msi.gaml.types.Types;
-
 import spin.SpinNetwork;
 
 public class GenStarGamaUtils {
 	
-	public static GSSurveyType toSurveyType(String type) {
-		if (type.equals("ContingencyTable"))
-			return GSSurveyType.ContingencyTable;
-		if (type.equals("GlobalFrequencyTable"))
-			return GSSurveyType.GlobalFrequencyTable;
-		if (type.equals("LocalFrequencyTable"))
-			return GSSurveyType.LocalFrequencyTable;
-		return GSSurveyType.Sample;
+	/**
+	 * The spatial distribution available in the Genstar API
+	 * @param distribution
+	 * @return
+	 */
+	public static SpatialDistribution toSpatialDistribution(String distribution) {
+		if(SpatialDistribution.AREA.getMatch(distribution))
+			return SpatialDistribution.AREA;
+		if(SpatialDistribution.CAPACITY.getMatch(distribution))
+			return SpatialDistribution.CAPACITY;
+		return null;
 	}
 	
+	/**
+	 * Get Genstar API Survey type enum representation
+	 * @param type
+	 * @return
+	 */
+	public static GSSurveyType toSurveyType(String type) {
+		if (InputDataType.CONTINGENCY.getMatch(type))
+			return GSSurveyType.ContingencyTable;
+		if (InputDataType.FREQUENCY.getMatch(type))
+			return GSSurveyType.GlobalFrequencyTable;
+		if (InputDataType.LOCAL.getMatch(type))
+			return GSSurveyType.LocalFrequencyTable;
+		if (InputDataType.SAMPLE.getMatch(type))
+			return GSSurveyType.Sample;
+		return null;
+	}
+	
+	/**
+	 * The generation algorithm given by the Genstar API
+	 * @param algo
+	 * @return
+	 */
 	public static IGosplConcept.EGosplAlgorithm toGosplAlgorithm(String algo){
-		if (Arrays.asList("Direct Sampling","DS","IS").stream().anyMatch(elem -> elem.equalsIgnoreCase(algo)))
+		if (GenerationAlgorithm.DIRECTSAMPLING.getMatch(algo))
 			return IGosplConcept.EGosplAlgorithm.DS;
-		if (Arrays.asList("Hierarchical Sampling","HS").stream().anyMatch(elem -> elem.equalsIgnoreCase(algo)))
+		if (GenerationAlgorithm.HIERARCHICALSAMPLING.getMatch(algo))
 			return IGosplConcept.EGosplAlgorithm.HS;
-		if (Arrays.asList("Uniform Sampling","US","simple_draw").stream().anyMatch(elem -> elem.equalsIgnoreCase(algo)))
+		if (GenerationAlgorithm.UNIFORMSAMPLING.getMatch(algo))
 			return IGosplConcept.EGosplAlgorithm.US;
 		return null;
 	}

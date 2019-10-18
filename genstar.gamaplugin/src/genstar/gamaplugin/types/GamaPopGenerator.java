@@ -24,6 +24,7 @@ import core.metamodel.attribute.AttributeFactory;
 import core.metamodel.attribute.record.RecordAttribute;
 import core.metamodel.entity.ADemoEntity;
 import core.metamodel.io.GSSurveyWrapper;
+import genstar.gamaplugin.utils.GenStarConstant.SpatialDistribution;
 import msi.gama.common.interfaces.IValue;
 import msi.gama.metamodel.agent.IAgent;
 import msi.gama.precompiler.GamlAnnotations.doc;
@@ -33,12 +34,14 @@ import msi.gama.precompiler.GamlAnnotations.vars;
 import msi.gama.runtime.IScope;
 import msi.gama.util.GamaListFactory;
 import msi.gama.util.IList;
+import msi.gaml.operators.Strings;
 import msi.gaml.types.IType;
 import msi.gaml.types.Types;
 import spin.SpinNetwork;
 import spin.SpinPopulation;
 import spin.algo.generator.ISpinNetworkGenerator;
 import spll.io.SPLVectorFile;
+import spll.popmapper.constraint.SpatialConstraintMaxNumber;
 import spll.popmapper.distribution.ISpatialDistribution;
 import spll.popmapper.distribution.SpatialDistributionFactory;
 
@@ -67,7 +70,7 @@ public class GamaPopGenerator implements IValue {
 	AttributeDictionary inputAttributes ;
 	
 	//////////////////////////////////////////////
-	// Attirbute for the Gospl generation
+	// Attirbute for the Spll localization
 	//////////////////////////////////////////////
 	boolean spatializePopulation;	
 	
@@ -81,7 +84,11 @@ public class GamaPopGenerator implements IValue {
 	Double maxDistanceLocalize;
 	boolean localizeOverlaps;
 	
-	String spatialDistribution;
+	// Spatial distribution
+	SpatialDistribution spatialDistribution;
+	private String capacityConstraintFeature = "";
+	double capacityConstraintDistribution = -1d;
+	
 	String crs;
 
 	List<String> pathAncilaryGeofiles;
@@ -269,24 +276,44 @@ public class GamaPopGenerator implements IValue {
 		this.localizeOverlaps = localizeOverlaps;
 	}
 
-
-	public String getSpatialDistribution() {
+	// Spatial distribution
+	
+	public SpatialDistribution getSpatialDistribution() {
 		return spatialDistribution;
 	}
 
 
-	public void setSpatialDistribution(String spatialDistribution) {
+	public void setSpatialDistribution(SpatialDistribution spatialDistribution) {
 		this.spatialDistribution = spatialDistribution;
 	}	
+	
+	public void setSpatialDistributionCapacity(int capacity) {
+		this.capacityConstraintDistribution = capacity;
+	}
+	
+	public void setSpatialDistributionCapacityFeature(String feature) {
+		this.capacityConstraintFeature = feature;
+	}
 	
 	@SuppressWarnings("rawtypes")
 	// TODO add more distribution...
 	public ISpatialDistribution getSpatialDistribution(SPLVectorFile sfGeometries) {
-		if("area".equals(spatialDistribution)) {
-			return SpatialDistributionFactory.getInstance().getAreaBasedDistribution(sfGeometries);			
+		switch(getSpatialDistribution()) {
+			case AREA : 
+				return SpatialDistributionFactory.getInstance().getAreaBasedDistribution(sfGeometries);
+			case CAPACITY :
+				if(capacityConstraintDistribution > 0) {
+					return SpatialDistributionFactory.getInstance().getCapacityBasedDistribution(
+							new SpatialConstraintMaxNumber(sfGeometries.getGeoEntity(), capacityConstraintDistribution)
+							);
+				} else if (capacityConstraintFeature != null && !Strings.isEmpty(capacityConstraintFeature)) {
+					return SpatialDistributionFactory.getInstance().getCapacityBasedDistribution(
+							new SpatialConstraintMaxNumber(sfGeometries.getGeoEntity(), capacityConstraintFeature)
+							);
+				}
+			default :
+				return SpatialDistributionFactory.getInstance().getUniformDistribution();
 		}
-		
-		return SpatialDistributionFactory.getInstance().getUniformDistribution();
 	}
 	
 
@@ -350,4 +377,5 @@ public class GamaPopGenerator implements IValue {
 	public Collection<IAgent> getAgents() {
 		return mapEntitiesAgent.values();
 	}
+
 }
