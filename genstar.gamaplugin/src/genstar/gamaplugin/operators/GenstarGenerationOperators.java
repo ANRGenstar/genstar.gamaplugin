@@ -40,7 +40,6 @@ import gospl.distribution.exception.IllegalDistributionCreation;
 import gospl.distribution.matrix.INDimensionalMatrix;
 import gospl.distribution.matrix.coordinate.ACoordinate;
 import gospl.generator.DistributionBasedGenerator;
-import gospl.generator.ISyntheticGosplPopGenerator;
 import gospl.io.exception.InvalidSurveyFormatException;
 import gospl.sampler.IDistributionSampler;
 import gospl.sampler.IHierarchicalSampler;
@@ -120,7 +119,9 @@ public class GenstarGenerationOperators {
 		
 		final EGosplAlgorithm algo = GenStarGamaUtils.toGosplAlgorithm(gen.getGenerationAlgorithm());
 		switch (algo.concept) {
+			// ------------------------
 			// SYNTHETIC RECONSTRUCTION
+			// ------------------------
 			case SR: 
 				try {
 					   gdb.buildDataTables();  // Load and read input data
@@ -194,21 +195,26 @@ public class GenstarGenerationOperators {
 				}
 				targetPopulation = targetPopulation <= 0 ? 1 : targetPopulation;
 				
-				// BUILD THE GENERATOR
-				final ISyntheticGosplPopGenerator ispGenerator = new DistributionBasedGenerator(sampler);
-				
 				// BUILD THE POPULATION
-				try {
-					population = ispGenerator.generate(targetPopulation);
-					
-				} catch (final NumberFormatException e) {
-					throw GamaRuntimeException.error("Wrong number format. " + e.getMessage(), scope);
-				}
-				
+				population = new DistributionBasedGenerator(sampler).generate(targetPopulation);
 				break;
-			// COMBINATORIAL OPTIMIZATION	
+				
+			// --------------------------
+			// COMBINATORIAL OPTIMIZATION
+			// --------------------------
 			case CO: 
+				
+				// Retrieve sample
+				try {
+					gdb.buildSamples();
+				} catch (final RuntimeException | IOException | InvalidSurveyFormatException | InvalidFormatException e) {
+					e.printStackTrace();
+				} 
+
+				IPopulation p = gdb.getRawSamples().stream().findFirst().orElseThrow(NullPointerException::new);
+				
 				switch (algo) { 
+				
 					case SA: 
 						throw new UnsupportedOperationException(EGosplAlgorithm.SA.name
 								+" based combinatorial optimization population synthesis have not yet been ported from API to plugin ! "
@@ -221,35 +227,34 @@ public class GenstarGenerationOperators {
 						throw new UnsupportedOperationException(EGosplAlgorithm.SA.name
 								+" based combinatorial optimization population synthesis have not yet been ported from API to plugin ! "
 								+ "if necessary, requests dev at https://github.com/ANRGenstar/genstar.gamaplugin ;)");
-					case US : // Same as default
+					case US : 
 					default :
-						try {
-							gdb.buildSamples();
-						} catch (final RuntimeException | IOException | InvalidSurveyFormatException | InvalidFormatException e) {
-							e.printStackTrace();
-						} 
-	
-			    	   IPopulation p = gdb.getRawSamples().iterator().next();
-				       if (targetPopulation <= 0) {
-				    	   population = p;
-				       } else {
-					       List<ADemoEntity> popSample = new ArrayList<>(p);
-					       for (int i= 0; i < targetPopulation; i++) {
-					    	   ADemoEntity ent =  popSample.get(scope.getRandom().between(0, popSample.size()-1));
-					    	   Map<Attribute<? extends IValue>, IValue> atts = ent.getAttributes().stream()
-					    			   .collect(Collectors.toMap(a -> a, a -> ent.getValueForAttribute(a)));
-					    	   ADemoEntity entity = new GosplEntity(atts);
-					    	   population.add(entity);
-					       }
-				       }
-				       
-				       break;
+						if (targetPopulation <= 0) {
+							population = p;
+						} else {
+							List<ADemoEntity> popSample = new ArrayList<>(p);
+							for (int i= 0; i < targetPopulation; i++) {
+								ADemoEntity ent =  popSample.get(scope.getRandom().between(0, popSample.size()-1));
+								Map<Attribute<? extends IValue>, IValue> atts = ent.getAttributes().stream()
+										.collect(Collectors.toMap(a -> a, a -> ent.getValueForAttribute(a)));
+								ADemoEntity entity = new GosplEntity(atts);
+								population.add(entity);
+							}
+						}
+
+						break;
 				}
 				break;
 			
+			// -----------------
+			// UPDATE POPULATION
+			// -----------------
 			case MIXTURE: 
 				throw new UnsupportedOperationException("Mixture population synthesis have not yet been ported from API to plugin ! request dev if necessary ;)");
 			
+			// --------------------------------
+			// MULTILEVEL POPULATION GENERATION
+			// --------------------------------
 			case MULTILEVEL:
 				throw new UnsupportedOperationException("Genstar Gama plugin Cannot yet build a multi-level population");
 		}
