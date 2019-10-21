@@ -34,6 +34,7 @@ import msi.gama.precompiler.GamlAnnotations.setter;
 import msi.gama.precompiler.GamlAnnotations.variable;
 import msi.gama.precompiler.GamlAnnotations.vars;
 import msi.gama.runtime.IScope;
+import msi.gama.runtime.exceptions.GamaRuntimeException;
 import msi.gama.util.GamaListFactory;
 import msi.gama.util.IList;
 import msi.gaml.operators.Strings;
@@ -303,7 +304,7 @@ public class GamaPopGenerator implements IValue {
 	
 	@SuppressWarnings("rawtypes")
 	// TODO add more distribution...
-	public ISpatialDistribution getSpatialDistribution(SPLVectorFile sfGeometries) {
+	public ISpatialDistribution getSpatialDistribution(SPLVectorFile sfGeometries, IScope scope) {
 		switch(getSpatialDistribution()) {
 			case AREA : 
 				return SpatialDistributionFactory.getInstance().getAreaBasedDistribution(sfGeometries);
@@ -313,6 +314,13 @@ public class GamaPopGenerator implements IValue {
 							new SpatialConstraintMaxNumber(sfGeometries.getGeoEntity(), capacityConstraintDistribution)
 							);
 				} else if (capacityConstraintFeature != null && !Strings.isEmpty(capacityConstraintFeature)) {
+					
+					if(sfGeometries.getGeoEntity().stream().anyMatch(f -> !f.getAttributes()
+							.stream().noneMatch(af -> af.getAttributeName().equalsIgnoreCase(capacityConstraintFeature)))) {
+						throw GamaRuntimeException.error("The specified capacity constraint feature "
+							+capacityConstraintFeature+" is not present in every nest", scope);
+					}
+					
 					return SpatialDistributionFactory.getInstance().getCapacityBasedDistribution(
 							new SpatialConstraintMaxNumber(sfGeometries.getGeoEntity(), capacityConstraintFeature)
 							);

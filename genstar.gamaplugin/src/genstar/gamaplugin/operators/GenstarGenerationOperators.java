@@ -430,10 +430,10 @@ public class GenstarGenerationOperators {
 		SPLocalizer localizer;		
 		if(sfGeoms != null) {
 			localizer = new SPLocalizer(population, sfGeoms);	
-			localizer.setDistribution(gen.getSpatialDistribution(sfGeoms));
+			localizer.setDistribution(gen.getSpatialDistribution(sfGeoms, scope));
 		} else {
 			localizer = new SPLocalizer(population, sfCensus);
-			localizer.setDistribution(gen.getSpatialDistribution(sfCensus));			
+			localizer.setDistribution(gen.getSpatialDistribution(sfCensus, scope));			
 		}
 		
 		// SETUP GEOGRAPHICAL MATCHER
