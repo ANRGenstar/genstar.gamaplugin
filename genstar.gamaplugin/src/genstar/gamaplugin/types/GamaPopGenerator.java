@@ -24,11 +24,13 @@ import core.metamodel.attribute.AttributeFactory;
 import core.metamodel.attribute.record.RecordAttribute;
 import core.metamodel.entity.ADemoEntity;
 import core.metamodel.io.GSSurveyWrapper;
+import genstar.gamaplugin.utils.GenStarConstant.GenerationAlgorithm;
 import genstar.gamaplugin.utils.GenStarConstant.SpatialDistribution;
 import msi.gama.common.interfaces.IValue;
 import msi.gama.metamodel.agent.IAgent;
 import msi.gama.precompiler.GamlAnnotations.doc;
 import msi.gama.precompiler.GamlAnnotations.getter;
+import msi.gama.precompiler.GamlAnnotations.setter;
 import msi.gama.precompiler.GamlAnnotations.variable;
 import msi.gama.precompiler.GamlAnnotations.vars;
 import msi.gama.runtime.IScope;
@@ -44,8 +46,6 @@ import spll.io.SPLVectorFile;
 import spll.popmapper.constraint.SpatialConstraintMaxNumber;
 import spll.popmapper.distribution.ISpatialDistribution;
 import spll.popmapper.distribution.SpatialDistributionFactory;
-
-
 
 // TODO var à revoir completement
 @vars({
@@ -68,6 +68,8 @@ public class GamaPopGenerator implements IValue {
 	String generationAlgorithm;
 	List<GSSurveyWrapper> inputFiles;
 	AttributeDictionary inputAttributes ;
+	
+	public boolean IPF;
 	
 	//////////////////////////////////////////////
 	// Attirbute for the Spll localization
@@ -102,7 +104,7 @@ public class GamaPopGenerator implements IValue {
 
 
 	public GamaPopGenerator() {
-		generationAlgorithm = "IS";		
+		generationAlgorithm = GenerationAlgorithm.DIRECTSAMPLING.getAlias().get(0);		
 		inputFiles = new ArrayList<>();
 		inputAttributes = new AttributeDictionary();
 		
@@ -209,9 +211,13 @@ public class GamaPopGenerator implements IValue {
 	}
 	
 	@getter("generation_algo")
-	public String getGenerationAlgorithm() {
-		return generationAlgorithm;
-	}
+	public String getGenerationAlgorithm() { return generationAlgorithm; }
+	
+	@getter("ipf")
+	public boolean getIPF() { return IPF; }
+	
+	@setter("ipf")
+	public void setIPF(boolean ipf) { this.IPF = ipf; }
 	
 	@getter("spatial_file")
 	public String getPathNestedGeometries() {

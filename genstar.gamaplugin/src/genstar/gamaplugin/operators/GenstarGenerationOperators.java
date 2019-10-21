@@ -28,8 +28,11 @@ import genstar.gamaplugin.types.GamaPopGenerator;
 import genstar.gamaplugin.utils.GenStarGamaUtils;
 import gospl.GosplEntity;
 import gospl.GosplPopulation;
+import gospl.algo.IGosplConcept.EGosplAlgorithm;
+import gospl.algo.ipf.SRIPFAlgo;
 import gospl.algo.sr.ISyntheticReconstructionAlgo;
 import gospl.algo.sr.ds.DirectSamplingAlgo;
+import gospl.algo.sr.hs.HierarchicalHypothesisAlgo;
 import gospl.distribution.GosplContingencyTable;
 import gospl.distribution.GosplInputDataManager;
 import gospl.distribution.exception.IllegalControlTotalException;
@@ -40,8 +43,10 @@ import gospl.generator.DistributionBasedGenerator;
 import gospl.generator.ISyntheticGosplPopGenerator;
 import gospl.io.exception.InvalidSurveyFormatException;
 import gospl.sampler.IDistributionSampler;
+import gospl.sampler.IHierarchicalSampler;
 import gospl.sampler.ISampler;
 import gospl.sampler.sr.GosplBasicSampler;
+import gospl.sampler.sr.GosplHierarchicalSampler;
 import msi.gama.metamodel.shape.GamaShape;
 import msi.gama.metamodel.shape.IShape;
 import msi.gama.precompiler.GamlAnnotations.doc;
@@ -113,100 +118,143 @@ public class GenstarGenerationOperators {
 		
 		IPopulation<ADemoEntity, Attribute<? extends IValue>> population = new GosplPopulation();
 		
-		switch (GenStarGamaUtils.toGosplAlgorithm(gen.getGenerationAlgorithm())) {
-		
-		// DIRECT SAMPLING
-		case DS:
-			try {
-			   gdb.buildDataTables();
-			} catch (final RuntimeException | IOException | InvalidSurveyFormatException | InvalidFormatException e) {
-				throw GamaRuntimeException.error("Error in building dataTable for the IS algorithm. "+e.getMessage(), scope);
-			}
-
-			INDimensionalMatrix<Attribute<? extends IValue>, IValue, Double> distribution = null;
-			try {
-				distribution = gdb.collapseDataTablesIntoDistribution();
-			} catch (final IllegalDistributionCreation e1) {
-				throw GamaRuntimeException.error("Error of distribution creation in collapsing DataTable into distibution for the IS algorithm. "+e1.getMessage(), scope);
-			} catch (final IllegalControlTotalException e1) {
-				throw GamaRuntimeException.error("Error of control in collapsing DataTable into distibution for the IS algorithm. "+e1.getMessage(), scope);
-			}
-			
-			// BUILD THE SAMPLER WITH THE INFERENCE ALGORITHM
-			final ISyntheticReconstructionAlgo<IDistributionSampler> distributionInfAlgo = new DirectSamplingAlgo();
-			ISampler<ACoordinate<Attribute<? extends IValue>, IValue>> sampler = null;
-			try {
-				sampler = distributionInfAlgo.inferSRSampler(distribution, new GosplBasicSampler());
-			} catch (final IllegalDistributionCreation e1) {
-				throw GamaRuntimeException.error("Error of distribution creation in infering the sampler for the IS algorithm. "+e1.getMessage(), scope);
-			}
-			
-			if (targetPopulation < 0) {
-				int min = Integer.MAX_VALUE;
-				for (INDimensionalMatrix<Attribute<? extends IValue>,IValue,? extends Number> mat: gdb.getRawDataTables()) {
-					if (mat instanceof GosplContingencyTable) {
-						GosplContingencyTable cmat = (GosplContingencyTable) mat;
-						min = Math.min(min, cmat.getMatrix().values().stream().mapToInt(v -> v.getValue()).sum());
-					}
+		final EGosplAlgorithm algo = GenStarGamaUtils.toGosplAlgorithm(gen.getGenerationAlgorithm());
+		switch (algo.concept) {
+			// SYNTHETIC RECONSTRUCTION
+			case SR: 
+				try {
+					   gdb.buildDataTables();  // Load and read input data
+					} catch (final RuntimeException | IOException | InvalidSurveyFormatException | InvalidFormatException e) {
+						throw GamaRuntimeException.error("Error in building dataTable for the IS algorithm. "+e.getMessage(), scope);
 				}
-				if (min < Integer.MAX_VALUE) {
-					targetPopulation =min;
-				} else targetPopulation = 1;
-			}
-			targetPopulation = targetPopulation <= 0 ? 1 : targetPopulation;
-			
-			// BUILD THE GENERATOR
-			final ISyntheticGosplPopGenerator ispGenerator = new DistributionBasedGenerator(sampler);
-			// BUILD THE POPULATION
-			try {
-				population = ispGenerator.generate(targetPopulation);
 				
-			} catch (final NumberFormatException e) {
-				throw GamaRuntimeException.error("Wrong number format. " + e.getMessage(), scope);
-			}
-			break;
-
-		// TODO : HIERARCHICAL SAMPLING
-		case HS:
+				INDimensionalMatrix<Attribute<? extends IValue>, IValue, Double> distribution = null;
+				try {
+					distribution = gdb.collapseDataTablesIntoDistribution(); // Build a distribution from input data
+				} catch (final IllegalDistributionCreation e1) {
+					throw GamaRuntimeException.error("Error of distribution creation in collapsing DataTable into distibution. "+e1.getMessage(), scope);
+				} catch (final IllegalControlTotalException e1) {
+					throw GamaRuntimeException.error("Error of control in collapsing DataTable into distibution. "+e1.getMessage(), scope);
+				}
+				
+				// BUILD THE SAMPLER WITH THE PROPER ALGORITHM
+				ISampler<ACoordinate<Attribute<? extends IValue>, IValue>> sampler = null;
+				
+				switch (algo) { 
+					case HS:
+						ISyntheticReconstructionAlgo<IHierarchicalSampler> hierarchicalInfAlgo = new HierarchicalHypothesisAlgo();
+						try {
+							sampler = hierarchicalInfAlgo.inferSRSampler(distribution, new GosplHierarchicalSampler());
+						} catch (IllegalDistributionCreation e2) {
+							// TODO Auto-generated catch block
+							e2.printStackTrace();
+						}
+						break;
+					case DS:
+					default:
+						ISyntheticReconstructionAlgo<IDistributionSampler> distributionInfAlgo = null;
+						if (gen.IPF) {
+							try {
+								gdb.buildSamples();
+							} catch (final IOException | InvalidSurveyFormatException 
+									| InvalidFormatException e) {
+								throw new RuntimeException(e);
+							}
+							
+							// Input sample
+							IPopulation<ADemoEntity, Attribute<? extends IValue>> seed = gdb.getRawSamples().stream()
+									.findFirst().orElseThrow(NullPointerException::new);
+							
+							// Setup IPF with seed, number of maximum fitting iteration, and delta convergence criteria 
+							distributionInfAlgo = new SRIPFAlgo(seed, 100, Math.pow(10, -4));
+						} else { 
+							distributionInfAlgo = new DirectSamplingAlgo();
+						}
+						try {
+							sampler = distributionInfAlgo.inferSRSampler(distribution, new GosplBasicSampler());
+						} catch (final IllegalDistributionCreation e1) {
+							throw GamaRuntimeException.error("Error of distribution creation in infering the sampler for "+algo.name
+									+" SR Based algorithm. "+e1.getMessage(), scope);
+						}
+						break;
+				}
+				
+				// DEFINE THE POPULATION SIZE
+				if (targetPopulation < 0) {
+					int min = Integer.MAX_VALUE;
+					for (INDimensionalMatrix<Attribute<? extends IValue>,IValue,? extends Number> mat: gdb.getRawDataTables()) {
+						if (mat instanceof GosplContingencyTable) {
+							GosplContingencyTable cmat = (GosplContingencyTable) mat;
+							min = Math.min(min, cmat.getMatrix().values().stream().mapToInt(v -> v.getValue()).sum());
+						}
+					}
+					if (min < Integer.MAX_VALUE) {
+						targetPopulation =min;
+					} else targetPopulation = 1;
+				}
+				targetPopulation = targetPopulation <= 0 ? 1 : targetPopulation;
+				
+				// BUILD THE GENERATOR
+				final ISyntheticGosplPopGenerator ispGenerator = new DistributionBasedGenerator(sampler);
+				
+				// BUILD THE POPULATION
+				try {
+					population = ispGenerator.generate(targetPopulation);
+					
+				} catch (final NumberFormatException e) {
+					throw GamaRuntimeException.error("Wrong number format. " + e.getMessage(), scope);
+				}
+				
+				break;
+			// COMBINATORIAL OPTIMIZATION	
+			case CO: 
+				switch (algo) { 
+					case SA: 
+						throw new UnsupportedOperationException(EGosplAlgorithm.SA.name
+								+" based combinatorial optimization population synthesis have not yet been ported from API to plugin ! "
+								+ "if necessary, requests dev at https://github.com/ANRGenstar/genstar.gamaplugin ;)");
+					case TABU: 
+						throw new UnsupportedOperationException(EGosplAlgorithm.TABU.name
+							+" based combinatorial optimization population synthesis have not yet been ported from API to plugin ! "
+							+ "if necessary, requests dev at https://github.com/ANRGenstar/genstar.gamaplugin ;)");
+					case RS: 
+						throw new UnsupportedOperationException(EGosplAlgorithm.SA.name
+								+" based combinatorial optimization population synthesis have not yet been ported from API to plugin ! "
+								+ "if necessary, requests dev at https://github.com/ANRGenstar/genstar.gamaplugin ;)");
+					case US : // Same as default
+					default :
+						try {
+							gdb.buildSamples();
+						} catch (final RuntimeException | IOException | InvalidSurveyFormatException | InvalidFormatException e) {
+							e.printStackTrace();
+						} 
+	
+			    	   IPopulation p = gdb.getRawSamples().iterator().next();
+				       if (targetPopulation <= 0) {
+				    	   population = p;
+				       } else {
+					       List<ADemoEntity> popSample = new ArrayList<>(p);
+					       for (int i= 0; i < targetPopulation; i++) {
+					    	   ADemoEntity ent =  popSample.get(scope.getRandom().between(0, popSample.size()-1));
+					    	   Map<Attribute<? extends IValue>, IValue> atts = ent.getAttributes().stream()
+					    			   .collect(Collectors.toMap(a -> a, a -> ent.getValueForAttribute(a)));
+					    	   ADemoEntity entity = new GosplEntity(atts);
+					    	   population.add(entity);
+					       }
+				       }
+				       
+				       break;
+				}
+				break;
 			
-			break;
+			case MIXTURE: 
+				throw new UnsupportedOperationException("Mixture population synthesis have not yet been ported from API to plugin ! request dev if necessary ;)");
 			
-		// UNIFORM SAMPLING	
-		case US:
-			
-			try {
-				gdb.buildSamples();
-			} catch (final RuntimeException | IOException | InvalidSurveyFormatException | InvalidFormatException e) {
-				e.printStackTrace();
-			} 
-
-    	   IPopulation p = gdb.getRawSamples().iterator().next();
-	       if (targetPopulation <= 0) {
-	    	   population = p;
-	       } else {
-		       List<ADemoEntity> popSample = new ArrayList<>(p);
-		       for (int i= 0; i < targetPopulation; i++) {
-		    	   ADemoEntity ent =  popSample.get(scope.getRandom().between(0, popSample.size()-1));
-		    	   Map<Attribute<? extends IValue>, IValue> atts = ent.getAttributes().stream()
-		    			   .collect(Collectors.toMap(a -> a, a -> ent.getValueForAttribute(a)));
-		    	   ADemoEntity entity = new GosplEntity(atts);
-		    	   population.add(entity);
-		       }
-	       }
-	       
-	       break;
-			
-		// TODO add all CO algorithms
-	       
-		case SA: break;
-		case TABU: break;
-		case RS: break;
-			
-		default:
-			break;
+			case MULTILEVEL:
+				throw new UnsupportedOperationException("Genstar Gama plugin Cannot yet build a multi-level population");
 		}
        
-       if (population == null) return null;
+		if (population == null) return null;
        
        ////////////////////////////////////////////////////////////////////////
        // Spll generation

@@ -2,10 +2,6 @@ package genstar.gamaplugin.operators;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 
 import core.metamodel.attribute.Attribute;
 import core.metamodel.attribute.AttributeFactory;
@@ -42,8 +38,12 @@ public class GenstarAdderOperators {
 
 	
 	@operator(value = "add_mapper", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-	@doc(value = "add a mapper between source of data for a attribute to a population_generator. A mapper is defined by the name of the attribute, the datatype of attribute (type), the corresponding value (map<list,list>) and the type of attribute (\"unique\" or \"range\")",
-	examples = @example(value = " add_mapper(pop_gen, \"Age\", int, [[\"0 to 18\"]::[\"1 to 10\",\"11 to 18\"], [\"18 to 100\"]::[\"18 to 50\",\"51 to 100\"] , \"range\");", test = false))
+	@doc(value = "add a mapper between source of data for a attribute to a population_generator. "
+			+ "A mapper is defined by the name of the attribute, the datatype of attribute (type), "
+			+ "the corresponding value (map<list,list>) and the type of attribute (\"unique\" or \"range\")",
+		examples = @example(value = " add_mapper(pop_gen, \"Age\", int, [[\"0 to 18\"]::[\"1 to 10\",\"11 to 18\"], "
+				+ "[\"18 to 100\"]::[\"18 to 50\",\"51 to 100\"] , \"range\");", test = false))
+	@no_test
 	public static GamaPopGenerator addMapper(IScope scope, GamaPopGenerator gen, String referentAttributeName, IType dataType, GamaMap values ) {
 		return addMapper(scope, gen,referentAttributeName, dataType, values, false);
 	}
@@ -51,8 +51,12 @@ public class GenstarAdderOperators {
 
 	// TODO : remove the type ... 
 	@operator(value = "add_mapper", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-	@doc(value = "add a mapper between source of data for a attribute to a population_generator. A mapper is defined by the name of the attribute, the datatype of attribute (type), the corresponding value (map<list,list>) and the type of attribute (\"unique\" or \"range\")",
-	examples = @example(value = " add_mapper(pop_gen, \"Age\", int, [[\"0 to 18\"]::[\"1 to 10\",\"11 to 18\"], [\"18 to 100\"]::[\"18 to 50\",\"51 to 100\"] , \"range\");", test = false))
+	@doc(value = "add a mapper between source of data for a attribute to a population_generator. "
+			+ "A mapper is defined by the name of the attribute, the datatype of attribute (type), "
+			+ "the corresponding value (map<list,list>) and the type of attribute (\"unique\" or \"range\")",
+	examples = @example(value = " add_mapper(pop_gen, \"Age\", int, [[\"0 to 18\"]::[\"1 to 10\",\"11 to 18\"], "
+			+ "[\"18 to 100\"]::[\"18 to 50\",\"51 to 100\"] , \"range\");", test = false))
+	@no_test
 	public static GamaPopGenerator addMapper(IScope scope, GamaPopGenerator gen, String referentAttributeName, IType dataType, GamaMap values, Boolean ordered) {
 		if (gen == null) {
 			gen = new GamaPopGenerator();
@@ -88,13 +92,16 @@ public class GenstarAdderOperators {
 	@operator(value = "add_attribute", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
 	@doc(value = "add an attribute defined by its name (string), its datatype (type), its list of values (list) to a population_generator",
 			examples = @example(value = "add_attribute(pop_gen, \"Sex\", string,[\"Man\", \"Woman\"])", test = false))
+	@no_test
 	public static GamaPopGenerator addAttribute(IScope scope, GamaPopGenerator gen, String name, IType dataType, IList value) {
 		return addAttribute(scope, gen, name, dataType, value, false);
 	}
 
 	@operator(value = "add_attribute", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-	@doc(value = "add an attribute defined by its name (string), its datatype (type), its list of values (list) and attributeType name (type of the attribute among \"range\" and \"unique\") to a population_generator", 
+	@doc(value = "add an attribute defined by its name (string), its datatype (type), its list of values (list) "
+			+ "and attributeType name (type of the attribute among \"range\" and \"unique\") to a population_generator", 
 			examples = @example(value = "add_attribute(pop_gen, \"iris\", string, liste_iris, \"unique\")", test = false))
+	@no_test
 	public static GamaPopGenerator addAttribute(IScope scope, GamaPopGenerator gen, String name, IType dataType, IList value, String record, IType recordType) {
 		return addAttribute(scope, gen, name, dataType, value, false, record, recordType);
 	}	
@@ -102,6 +109,7 @@ public class GenstarAdderOperators {
 	@operator(value = "add_attribute", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
 	@doc(value = "add an attribute defined by its name (string), its datatype (type), its list of values (list) to a population_generator",
 			examples = @example(value = "add_attribute(pop_gen, \"Sex\", string,[\"Man\", \"Woman\"])", test = false))
+	@no_test
 	public static GamaPopGenerator addAttribute(IScope scope, GamaPopGenerator gen, String name, IType dataType, IList value, Boolean ordered, String record, IType recordType) {
 		if (gen == null) {
 			gen = new GamaPopGenerator();
@@ -126,8 +134,10 @@ public class GenstarAdderOperators {
 	}	
 	
 	@operator(value = "add_attribute", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-	@doc(value = "add an attribute defined by its name (string), its datatype (type), its list of values (list) and record name (name of the attribute to record) to a population_generator", 
+	@doc(value = "add an attribute defined by its name (string), its datatype (type), its list of values (list) and "
+			+ "record name (name of the attribute to record) to a population_generator", 
 			examples = @example(value = "add_attribute(pop_gen, \"iris\", string,liste_iris, \"unique\", \"P13_POP\")", test = false))
+	@no_test
 	public static GamaPopGenerator addAttribute(IScope scope, GamaPopGenerator gen, String name, IType dataType, IList value, Boolean ordered) {
 		if (gen == null) {
 			gen = new GamaPopGenerator();
