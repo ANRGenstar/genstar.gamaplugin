@@ -55,7 +55,7 @@ public class GenstarLocalizeOperators {
 	}
 	
 	@operator(value = "add_capacity_distribution", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-	@doc(value = "Define the spatial distribution to of capacity type with a constant number of maximum synthetic entities per spatial entity",
+	@doc(value = "Define the spatial distribution of capacity type with a constant number of maximum synthetic entities per spatial entity",
 		examples = @example(value = "my_pop_generator add_capacity_distribution 5", test = false))
 	@no_test
 	public static GamaPopGenerator addCapacityDistribution(IScope scope, GamaPopGenerator gen, int capacity) {
@@ -65,15 +65,37 @@ public class GenstarLocalizeOperators {
 	}
 	
 	@operator(value = "add_capacity_distribution", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-	@doc(value = "Define the spatial distribution to of capacity type. The capacity is given in each spatial entity by a specified feature",
+	@doc(value = "Define the spatial distribution of capacity type. The capacity is given in each spatial entity by a specified feature",
 		examples = @example(value = "my_pop_generator add_capacity_distribution \"number of inhabitants\"", test = false))
 	@no_test
 	public static GamaPopGenerator addCapacityDistribution(IScope scope, GamaPopGenerator gen, String featureName) {
 		gen.setSpatialDistribution(SpatialDistribution.CAPACITY);
-		gen.setSpatialDistributionCapacityFeature(featureName);
+		gen.setSpatialDistributionFeature(featureName);
 		return gen;
-	}	
-
+	}
+	
+	@operator(value = "add_density_distribution", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
+	@doc(value = "Define the spatial distribution of density type with a constant "
+			+ "number of maximum synthetic entities per square meter in each spatial entity",
+		examples = @example(value = "my_pop_generator add_density_distribution 0.4", test = false))
+	@no_test
+	public static GamaPopGenerator addDensityDistribution(IScope scope, GamaPopGenerator gen, double density) {
+		gen.setSpatialDistribution(SpatialDistribution.DENSITY);
+		gen.setSpatialDistributionDensity(density);
+		return gen;
+	}
+	
+	@operator(value = "add_density_distribution", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
+	@doc(value = "Define the spatial distribution of density type. "
+			+ "The specific density is given in each spatial entity by a specified feature",
+		examples = @example(value = "my_pop_generator add_density_distribution \"density of inhabitants\"", test = false))
+	@no_test
+	public static GamaPopGenerator addDensityDistribution(IScope scope, GamaPopGenerator gen, String featureName) {
+		gen.setSpatialDistribution(SpatialDistribution.DENSITY);
+		gen.setSpatialDistributionFeature(featureName);
+		return gen;
+	}
+	
 	@operator(value = "localize_around_at", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
 	@doc(value = "Define a distance based rule to populate agent around: synthetic entities must be at \'max\' distance of "
 			+ "the given referent spatial entities (no nest)",

@@ -12,10 +12,12 @@
 package genstar.gamaplugin.types;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import core.configuration.dictionary.AttributeDictionary;
 import core.metamodel.IPopulation;
@@ -43,7 +45,9 @@ import msi.gaml.types.Types;
 import spin.SpinNetwork;
 import spin.SpinPopulation;
 import spin.algo.generator.ISpinNetworkGenerator;
+import spll.entity.SpllFeature;
 import spll.io.SPLVectorFile;
+import spll.popmapper.constraint.SpatialConstraintMaxDensity;
 import spll.popmapper.constraint.SpatialConstraintMaxNumber;
 import spll.popmapper.distribution.ISpatialDistribution;
 import spll.popmapper.distribution.SpatialDistributionFactory;
@@ -89,8 +93,9 @@ public class GamaPopGenerator implements IValue {
 	
 	// Spatial distribution
 	SpatialDistribution spatialDistribution;
-	private String capacityConstraintFeature = "";
-	double capacityConstraintDistribution = -1d;
+	private String constraintFeature = "";
+	private double capacityConstraintDistribution = -1d;
+	private double densityConstraintDistribution = -1d;
 	
 	String crs;
 
@@ -290,43 +295,61 @@ public class GamaPopGenerator implements IValue {
 	}
 
 
-	public void setSpatialDistribution(SpatialDistribution spatialDistribution) {
-		this.spatialDistribution = spatialDistribution;
-	}	
+	public void setSpatialDistribution(SpatialDistribution spatialDistribution) { this.spatialDistribution = spatialDistribution; }	
 	
-	public void setSpatialDistributionCapacity(int capacity) {
-		this.capacityConstraintDistribution = capacity;
-	}
+	public void setSpatialDistributionFeature(String feature) { this.constraintFeature = feature; }
 	
-	public void setSpatialDistributionCapacityFeature(String feature) {
-		this.capacityConstraintFeature = feature;
-	}
+	public void setSpatialDistributionCapacity(int capacity) { this.capacityConstraintDistribution = capacity; }
+	
+	public void setSpatialDistributionDensity(double density) { this.densityConstraintDistribution = density; }
 	
 	@SuppressWarnings("rawtypes")
 	// TODO add more distribution...
 	public ISpatialDistribution getSpatialDistribution(SPLVectorFile sfGeometries, IScope scope) {
-		switch(getSpatialDistribution()) {
-			case AREA : 
-				return SpatialDistributionFactory.getInstance().getAreaBasedDistribution(sfGeometries);
-			case CAPACITY :
-				if(capacityConstraintDistribution > 0) {
-					return SpatialDistributionFactory.getInstance().getCapacityBasedDistribution(
-							new SpatialConstraintMaxNumber(sfGeometries.getGeoEntity(), capacityConstraintDistribution)
-							);
-				} else if (capacityConstraintFeature != null && !Strings.isEmpty(capacityConstraintFeature)) {
-					
-					if(sfGeometries.getGeoEntity().stream().anyMatch(f -> !f.getAttributes()
-							.stream().noneMatch(af -> af.getAttributeName().equalsIgnoreCase(capacityConstraintFeature)))) {
+		switch(getSpatialDistribution().getSDP()) {
+			case NUMBER :  
+				SpatialConstraintMaxNumber scmn = null;
+				boolean featureBased = false;
+				if (constraintFeature != null && !Strings.isEmpty(constraintFeature)) {
+					List<SpllFeature> sf = sfGeometries.getGeoEntity().stream().filter(f -> !f.getAttributes()
+							.stream().noneMatch(af -> af.getAttributeName().equalsIgnoreCase(constraintFeature)))
+							.collect(Collectors.toList());
+					if(!sf.isEmpty()) {
 						throw GamaRuntimeException.error("The specified capacity constraint feature "
-							+capacityConstraintFeature+" is not present in every nest", scope);
+							+constraintFeature+" is not present in "+Arrays.asList(sf).toString(), scope);
 					}
-					
-					return SpatialDistributionFactory.getInstance().getCapacityBasedDistribution(
-							new SpatialConstraintMaxNumber(sfGeometries.getGeoEntity(), capacityConstraintFeature)
-							);
+					featureBased = true;
 				}
+				switch(getSpatialDistribution()) {
+					case CAPACITY :
+						if(featureBased) {
+							scmn = new SpatialConstraintMaxNumber(sfGeometries.getGeoEntity(), constraintFeature);
+						} else {
+							if(capacityConstraintDistribution <= 0) {capacityConstraintDistribution = 1;}
+							scmn = new SpatialConstraintMaxNumber(sfGeometries.getGeoEntity(), capacityConstraintDistribution);
+						}
+						break;
+					case DENSITY :
+						if(featureBased) {
+							scmn = new SpatialConstraintMaxDensity(sfGeometries.getGeoEntity(), constraintFeature);
+						} else if(capacityConstraintDistribution > 0) {
+							scmn = new SpatialConstraintMaxDensity(sfGeometries.getGeoEntity(), densityConstraintDistribution);
+						} else {
+							throw GamaRuntimeException.error(new IllegalArgumentException("A density or feature name must be specified for "
+									+ "a density based constraint spatial distribution").getMessage(), scope);
+						}
+						break;
+					default: break;
+				}
+				return SpatialDistributionFactory.getInstance().getCapacityBasedDistribution(scmn);
+			case SIMPLE : 
 			default :
-				return SpatialDistributionFactory.getInstance().getUniformDistribution();
+				switch(getSpatialDistribution()) {
+					case AREA : 
+						return SpatialDistributionFactory.getInstance().getAreaBasedDistribution(sfGeometries);
+					default :
+						return SpatialDistributionFactory.getInstance().getUniformDistribution();
+				}
 		}
 	}
 	
