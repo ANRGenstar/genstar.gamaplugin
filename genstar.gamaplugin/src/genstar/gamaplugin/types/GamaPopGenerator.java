@@ -311,7 +311,7 @@ public class GamaPopGenerator implements IValue {
 				SpatialConstraintMaxNumber scmn = null;
 				boolean featureBased = false;
 				if (constraintFeature != null && !Strings.isEmpty(constraintFeature)) {
-					List<SpllFeature> sf = sfGeometries.getGeoEntity().stream().filter(f -> !f.getAttributes()
+					List<SpllFeature> sf = sfGeometries.getGeoEntity().stream().filter(f -> f.getAttributes()
 							.stream().noneMatch(af -> af.getAttributeName().equalsIgnoreCase(constraintFeature)))
 							.collect(Collectors.toList());
 					if(!sf.isEmpty()) {
@@ -342,6 +342,9 @@ public class GamaPopGenerator implements IValue {
 					default: break;
 				}
 				return SpatialDistributionFactory.getInstance().getCapacityBasedDistribution(scmn);
+			case COMPLEX :
+				throw GamaRuntimeException.error(new UnsupportedOperationException("Complex spatial distribution "
+						+ "have not been yet passed in the plugin").getMessage(), scope);
 			case SIMPLE : 
 			default :
 				switch(getSpatialDistribution()) {
