@@ -11,6 +11,7 @@
 
 package genstar.gamaplugin.types;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -165,8 +166,7 @@ public class GamaPopGenerator implements IValue {
 
 	public void setPathNestedGeometries(String pathGeometries) {
 		this.pathNestedGeometries = pathGeometries;
-		// TODO add test si the File exist ?
-		setSpatializePopulation(pathGeometries != null);
+		setSpatializePopulation(Paths.get(pathGeometries).toFile().exists());
 	}	
 
 	public String getStringOfCensusIdInCSVfile() {
