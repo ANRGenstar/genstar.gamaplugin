@@ -33,8 +33,6 @@ global {
 	init {		
 		create building from: capacity_building ? capacity_buildings_shp : buildings_shp with:[capacity::int(get("capacity"))];	
 		
-		ask building { write sample(self)+" = "+capacity; }
-		
 		create iris_agent from: iris_shp with: [code_iris::string(read('CODE_IRIS'))];			
 		
 		gen_population_generator pop_gen;
