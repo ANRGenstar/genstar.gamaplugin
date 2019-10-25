@@ -14,6 +14,7 @@ global {
 
 	// String constants
 	file buildings_shp <- file("../../data/shp/buildings.shp");
+	file capacity_buildings_shp <- file("../../data/shp/buildings_capacity.shp");
 
 	//name of the property that contains the id of the census spatial areas in the shapefile
 	string stringOfCensusIdInShapefile <- "CODE_IRIS";
@@ -25,11 +26,15 @@ global {
 //	string stringPathToLandUseGrid <- "../../data/raster/occsol_rouen.tif";
 
 	bool sample_based parameter:true init:true;
+	bool capacity_building parameter:true init:true;
 
 	geometry shape <- envelope(buildings_shp);
 
 	init {		
-		create building from: buildings_shp ;	
+		create building from: capacity_building ? capacity_buildings_shp : buildings_shp with:[capacity::int(get("capacity"))];	
+		
+		ask building { write sample(self)+" = "+capacity; }
+		
 		create iris_agent from: iris_shp with: [code_iris::string(read('CODE_IRIS'))];			
 		
 		gen_population_generator pop_gen;
@@ -64,7 +69,15 @@ global {
 		// -------------------------
 		// Spatialization 
 		// -------------------------
-		pop_gen <- pop_gen localize_on_geometries(buildings_shp.path);
+		
+		
+		if capacity_building { 
+			pop_gen <- pop_gen localize_on_geometries(capacity_buildings_shp.path);
+			pop_gen <- pop_gen add_capacity_distribution("capacity");
+		} else {
+			pop_gen <- pop_gen localize_on_geometries(buildings_shp.path);
+		}
+		
 		pop_gen <- pop_gen localize_on_census(iris_shp.path);
 		
 		pop_gen <- pop_gen add_spatial_mapper(stringOfCensusIdInCSVfile,stringOfCensusIdInShapefile);
@@ -93,7 +106,7 @@ species iris_agent {
 }
 
 species building {
-	
+	int capacity;
 	aspect default {
 		draw shape color:#lightgrey  border: #black;
 	}

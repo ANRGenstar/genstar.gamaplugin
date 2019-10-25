@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -119,144 +120,136 @@ public class GenstarGenerationOperators {
 		
 		final EGosplAlgorithm algo = GenStarGamaUtils.toGosplAlgorithm(gen.getGenerationAlgorithm());
 		switch (algo.concept) {
-			// ------------------------
-			// SYNTHETIC RECONSTRUCTION
-			// ------------------------
-			case SR: 
+		case SR: // SYNTHETIC RECONSTRUCTION
+			try {
+				gdb.buildDataTables();  // Load and read input data
+			} catch (final RuntimeException | IOException | InvalidSurveyFormatException | InvalidFormatException e) {
+				throw GamaRuntimeException.error("Error in building dataTable for the IS algorithm. "+e.getMessage(), scope);
+			}
+
+			INDimensionalMatrix<Attribute<? extends IValue>, IValue, Double> distribution = null;
+			try {
+				distribution = gdb.collapseDataTablesIntoDistribution(); // Build a distribution from input data
+			} catch (final IllegalDistributionCreation e1) {
+				throw GamaRuntimeException.error("Error of distribution creation in collapsing DataTable into distibution. "+e1.getMessage(), scope);
+			} catch (final IllegalControlTotalException e1) {
+				throw GamaRuntimeException.error("Error of control in collapsing DataTable into distibution. "+e1.getMessage(), scope);
+			}
+
+			// BUILD THE SAMPLER WITH THE PROPER ALGORITHM
+			ISampler<ACoordinate<Attribute<? extends IValue>, IValue>> sampler = null;
+
+			switch (algo) { 
+			case HS: // HIERARCHICAL SAMPLING
+				ISyntheticReconstructionAlgo<IHierarchicalSampler> hierarchicalInfAlgo = new HierarchicalHypothesisAlgo();
 				try {
-					   gdb.buildDataTables();  // Load and read input data
-					} catch (final RuntimeException | IOException | InvalidSurveyFormatException | InvalidFormatException e) {
-						throw GamaRuntimeException.error("Error in building dataTable for the IS algorithm. "+e.getMessage(), scope);
+					sampler = hierarchicalInfAlgo.inferSRSampler(distribution, new GosplHierarchicalSampler());
+				} catch (IllegalDistributionCreation e2) {
+					// TODO Auto-generated catch block
+					e2.printStackTrace();
 				}
-				
-				INDimensionalMatrix<Attribute<? extends IValue>, IValue, Double> distribution = null;
-				try {
-					distribution = gdb.collapseDataTablesIntoDistribution(); // Build a distribution from input data
-				} catch (final IllegalDistributionCreation e1) {
-					throw GamaRuntimeException.error("Error of distribution creation in collapsing DataTable into distibution. "+e1.getMessage(), scope);
-				} catch (final IllegalControlTotalException e1) {
-					throw GamaRuntimeException.error("Error of control in collapsing DataTable into distibution. "+e1.getMessage(), scope);
-				}
-				
-				// BUILD THE SAMPLER WITH THE PROPER ALGORITHM
-				ISampler<ACoordinate<Attribute<? extends IValue>, IValue>> sampler = null;
-				
-				switch (algo) { 
-					case HS:
-						ISyntheticReconstructionAlgo<IHierarchicalSampler> hierarchicalInfAlgo = new HierarchicalHypothesisAlgo();
-						try {
-							sampler = hierarchicalInfAlgo.inferSRSampler(distribution, new GosplHierarchicalSampler());
-						} catch (IllegalDistributionCreation e2) {
-							// TODO Auto-generated catch block
-							e2.printStackTrace();
-						}
-						break;
-					case DS:
-					default:
-						ISyntheticReconstructionAlgo<IDistributionSampler> distributionInfAlgo = null;
-						if (gen.IPF) {
-							try {
-								gdb.buildSamples();
-							} catch (final IOException | InvalidSurveyFormatException 
-									| InvalidFormatException e) {
-								throw new RuntimeException(e);
-							}
-							
-							// Input sample
-							IPopulation<ADemoEntity, Attribute<? extends IValue>> seed = gdb.getRawSamples().stream()
-									.findFirst().orElseThrow(NullPointerException::new);
-							
-							// Setup IPF with seed, number of maximum fitting iteration, and delta convergence criteria 
-							distributionInfAlgo = new SRIPFAlgo(seed, 100, Math.pow(10, -4));
-						} else { 
-							distributionInfAlgo = new DirectSamplingAlgo();
-						}
-						try {
-							sampler = distributionInfAlgo.inferSRSampler(distribution, new GosplBasicSampler());
-						} catch (final IllegalDistributionCreation e1) {
-							throw GamaRuntimeException.error("Error of distribution creation in infering the sampler for "+algo.name
-									+" SR Based algorithm. "+e1.getMessage(), scope);
-						}
-						break;
-				}
-				
-				// DEFINE THE POPULATION SIZE
-				if (targetPopulation < 0) {
-					int min = Integer.MAX_VALUE;
-					for (INDimensionalMatrix<Attribute<? extends IValue>,IValue,? extends Number> mat: gdb.getRawDataTables()) {
-						if (mat instanceof GosplContingencyTable) {
-							GosplContingencyTable cmat = (GosplContingencyTable) mat;
-							min = Math.min(min, cmat.getMatrix().values().stream().mapToInt(v -> v.getValue()).sum());
-						}
+				break;
+			case DS: // DIRECT SAMPLING | DEFAULT
+			default:
+				ISyntheticReconstructionAlgo<IDistributionSampler> distributionInfAlgo = null;
+				if (gen.ipf) {
+					try {
+						gdb.buildSamples();
+					} catch (final IOException | InvalidSurveyFormatException 
+							| InvalidFormatException e) {
+						throw new RuntimeException(e);
 					}
-					if (min < Integer.MAX_VALUE) {
-						targetPopulation =min;
-					} else targetPopulation = 1;
+
+					// Input sample
+					IPopulation<ADemoEntity, Attribute<? extends IValue>> seed = gdb.getRawSamples().stream()
+							.findFirst().orElseThrow(NullPointerException::new);
+
+					// Setup IPF with seed, number of maximum fitting iteration, and delta convergence criteria 
+					distributionInfAlgo = new SRIPFAlgo(seed, 100, Math.pow(10, -4));
+				} else { 
+					distributionInfAlgo = new DirectSamplingAlgo();
 				}
-				targetPopulation = targetPopulation <= 0 ? 1 : targetPopulation;
-				
-				// BUILD THE POPULATION
-				population = new DistributionBasedGenerator(sampler).generate(targetPopulation);
-				break;
-				
-			// --------------------------
-			// COMBINATORIAL OPTIMIZATION
-			// --------------------------
-			case CO: 
-				
-				// Retrieve sample
 				try {
-					gdb.buildSamples();
-				} catch (final RuntimeException | IOException | InvalidSurveyFormatException | InvalidFormatException e) {
-					e.printStackTrace();
-				} 
-
-				IPopulation p = gdb.getRawSamples().stream().findFirst().orElseThrow(NullPointerException::new);
-				
-				switch (algo) { 
-				
-					case SA: 
-						throw new UnsupportedOperationException(EGosplAlgorithm.SA.name
-								+" based combinatorial optimization population synthesis have not yet been ported from API to plugin ! "
-								+ "if necessary, requests dev at https://github.com/ANRGenstar/genstar.gamaplugin ;)");
-					case TABU: 
-						throw new UnsupportedOperationException(EGosplAlgorithm.TABU.name
-							+" based combinatorial optimization population synthesis have not yet been ported from API to plugin ! "
-							+ "if necessary, requests dev at https://github.com/ANRGenstar/genstar.gamaplugin ;)");
-					case RS: 
-						throw new UnsupportedOperationException(EGosplAlgorithm.SA.name
-								+" based combinatorial optimization population synthesis have not yet been ported from API to plugin ! "
-								+ "if necessary, requests dev at https://github.com/ANRGenstar/genstar.gamaplugin ;)");
-					case US : 
-					default :
-						if (targetPopulation <= 0) {
-							population = p;
-						} else {
-							List<ADemoEntity> popSample = new ArrayList<>(p);
-							for (int i= 0; i < targetPopulation; i++) {
-								ADemoEntity ent =  popSample.get(scope.getRandom().between(0, popSample.size()-1));
-								Map<Attribute<? extends IValue>, IValue> atts = ent.getAttributes().stream()
-										.collect(Collectors.toMap(a -> a, a -> ent.getValueForAttribute(a)));
-								ADemoEntity entity = new GosplEntity(atts);
-								population.add(entity);
-							}
-						}
-
-						break;
+					sampler = distributionInfAlgo.inferSRSampler(distribution, new GosplBasicSampler());
+				} catch (final IllegalDistributionCreation e1) {
+					throw GamaRuntimeException.error("Error of distribution creation in infering the sampler for "+algo.name
+							+" SR Based algorithm. "+e1.getMessage(), scope);
 				}
 				break;
+			}
+
+			// DEFINE THE POPULATION SIZE
+			if (targetPopulation < 0) {
+				int min = Integer.MAX_VALUE;
+				for (INDimensionalMatrix<Attribute<? extends IValue>,IValue,? extends Number> mat: gdb.getRawDataTables()) {
+					if (mat instanceof GosplContingencyTable) {
+						GosplContingencyTable cmat = (GosplContingencyTable) mat;
+						min = Math.min(min, cmat.getMatrix().values().stream().mapToInt(v -> v.getValue()).sum());
+					}
+				}
+				if (min < Integer.MAX_VALUE) {
+					targetPopulation =min;
+				} else targetPopulation = 1;
+			}
+			targetPopulation = targetPopulation <= 0 ? 1 : targetPopulation;
+
+			// BUILD THE POPULATION
+			population = new DistributionBasedGenerator(sampler).generate(targetPopulation);
+			break;
 			
+		case CO: // COMBINATORIAL OPTIMIZATION 
+			try {
+				gdb.buildSamples(); // Retrieve sample
+			} catch (final RuntimeException | IOException | InvalidSurveyFormatException | InvalidFormatException e) {
+				e.printStackTrace();
+			} 
+
+			IPopulation p = gdb.getRawSamples().stream().findFirst().orElseThrow(NullPointerException::new);
+
+			switch (algo) { 
+
+			case SA: // SIMULATED ANNEANLING
+				throw new UnsupportedOperationException(EGosplAlgorithm.SA.name
+						+" based combinatorial optimization population synthesis have not yet been ported from API to plugin ! "
+						+ "if necessary, requests dev at https://github.com/ANRGenstar/genstar.gamaplugin ;)");
+			case TABU: // TABU SEARCH
+				throw new UnsupportedOperationException(EGosplAlgorithm.TABU.name
+						+" based combinatorial optimization population synthesis have not yet been ported from API to plugin ! "
+						+ "if necessary, requests dev at https://github.com/ANRGenstar/genstar.gamaplugin ;)");
+			case RS: // RANDOM SEARCH
+				throw new UnsupportedOperationException(EGosplAlgorithm.SA.name
+						+" based combinatorial optimization population synthesis have not yet been ported from API to plugin ! "
+						+ "if necessary, requests dev at https://github.com/ANRGenstar/genstar.gamaplugin ;)");
+			case US : // UNIFORM & RAW SAMPLING | DEFAULT
+			default :
+				if (targetPopulation <= 0) {
+					population = p;
+				} else {
+					List<ADemoEntity> popSample = new ArrayList<>(p);
+					for (int i= 0; i < targetPopulation; i++) {
+						ADemoEntity ent =  popSample.get(scope.getRandom().between(0, popSample.size()-1));
+						Map<Attribute<? extends IValue>, IValue> atts = ent.getAttributes().stream()
+								.collect(Collectors.toMap(a -> a, a -> ent.getValueForAttribute(a)));
+						ADemoEntity entity = new GosplEntity(atts);
+						population.add(entity);
+					}
+				}
+
+				break;
+			}
+			break;
+
 			// -----------------
-			// UPDATE POPULATION
+			// TODO : UPDATE POPULATION
 			// -----------------
-			case MIXTURE: 
-				throw new UnsupportedOperationException("Mixture population synthesis have not yet been ported from API to plugin ! request dev if necessary ;)");
-			
+		case MIXTURE: 
+			throw new UnsupportedOperationException("Mixture population synthesis have not yet been ported from API to plugin ! request dev if necessary ;)");
+
 			// --------------------------------
-			// MULTILEVEL POPULATION GENERATION
+			// TODO : MULTILEVEL POPULATION GENERATION
 			// --------------------------------
-			case MULTILEVEL:
-				throw new UnsupportedOperationException("Genstar Gama plugin Cannot yet build a multi-level population");
+		case MULTILEVEL:
+			throw new UnsupportedOperationException("Genstar Gama plugin Cannot yet build a multi-level population");
 		}
        
 		if (population == null) return null;
@@ -411,7 +404,12 @@ public class GenstarGenerationOperators {
 	 				
 		try {
 			if(sfGeomsF != null) {
-				sfGeoms = SPLGeofileBuilder.getShapeFile(sfGeomsF, null);
+				
+				// Take usable attribute from the file, e.g. for capacity constraint based spatial distribution
+				List<String> att = gen.getSpatialDistributionFeature() == "" ? 
+						null : Arrays.asList(gen.getSpatialDistributionFeature());
+				
+				sfGeoms = SPLGeofileBuilder.getShapeFile(sfGeomsF, att, null);
 				if(gen.getMaxDistanceLocalize() > 0.0) {
 					sfGeoms.minMaxDistance(gen.getMinDistanceLocalize(), gen.getMaxDistanceLocalize(), gen.isLocalizeOverlaps());				
 				}

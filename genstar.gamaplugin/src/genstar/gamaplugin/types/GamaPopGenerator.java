@@ -53,15 +53,22 @@ import spll.popmapper.constraint.SpatialConstraintMaxNumber;
 import spll.popmapper.distribution.ISpatialDistribution;
 import spll.popmapper.distribution.SpatialDistributionFactory;
 
-// TODO var à revoir completement
+
 @vars({
+	// TODO : old var to clean
 	@variable(name = "attributes", type = IType.LIST, of = IType.STRING, doc = {@doc("Returns the list of attribute names") }),
 	@variable(name = "census_files", type = IType.LIST, of = IType.STRING, doc = {@doc("Returns the list of census files") }), 
 	@variable(name = "generation_algo", type = IType.STRING, doc = {@doc("Returns the name of the generation algorithm") }),
 	@variable(name = "mappers", type = IType.MAP, doc = {@doc("Returns the list of mapper") }),
 	@variable(name = "spatial_file", type = IType.STRING, doc = {@doc("Returns the spatial file used to localize entities") }),
 	@variable(name = "spatial_mapper_file", type = IType.LIST, of = IType.STRING, doc = {@doc("Returns the list of spatial files used to map the entities to areas") }),
-	@variable(name = "spatial_matcher_file", type = IType.STRING, doc = {@doc("Returns the spatial file used to match entities and areas") })
+	@variable(name = "spatial_matcher_file", type = IType.STRING, doc = {@doc("Returns the spatial file used to match entities and areas") }),
+	// New var to include
+	@variable(name = GamaPopGenerator.IPF, type = IType.BOOL,
+			doc = {@doc("Enable the use of IPF to extrapolate a joint distribution upon marginals and seed sample")}),
+	@variable(name = GamaPopGenerator.FEATURE, type=IType.STRING, 
+			doc = {@doc("The spatial feature to setup capacity/density constraint for the spatial distribution")}
+			)
 })
 public class GamaPopGenerator implements IValue {
 
@@ -75,7 +82,8 @@ public class GamaPopGenerator implements IValue {
 	List<GSSurveyWrapper> inputFiles;
 	AttributeDictionary inputAttributes ;
 	
-	public boolean IPF;
+	public final static String IPF = "ipf";
+	public boolean ipf;
 	
 	//////////////////////////////////////////////
 	// Attirbute for the Spll localization
@@ -94,7 +102,10 @@ public class GamaPopGenerator implements IValue {
 	
 	// Spatial distribution
 	SpatialDistribution spatialDistribution;
+	
+	public final static String FEATURE = "constraint_feature";
 	private String constraintFeature = "";
+	
 	private double capacityConstraintDistribution = -1d;
 	private double densityConstraintDistribution = -1d;
 	
@@ -219,11 +230,11 @@ public class GamaPopGenerator implements IValue {
 	@getter("generation_algo")
 	public String getGenerationAlgorithm() { return generationAlgorithm; }
 	
-	@getter("ipf")
-	public boolean getIPF() { return IPF; }
+	@getter(IPF)
+	public boolean getIPF() { return ipf; }
 	
-	@setter("ipf")
-	public void setIPF(boolean ipf) { this.IPF = ipf; }
+	@setter(IPF)
+	public void setIPF(boolean ipf) { this.ipf = ipf; }
 	
 	@getter("spatial_file")
 	public String getPathNestedGeometries() {
@@ -288,15 +299,17 @@ public class GamaPopGenerator implements IValue {
 		this.localizeOverlaps = localizeOverlaps;
 	}
 
+	// --------------------
 	// Spatial distribution
+	// --------------------
 	
-	public SpatialDistribution getSpatialDistribution() {
-		return spatialDistribution;
-	}
+	public SpatialDistribution getSpatialDistribution() { return spatialDistribution; }
+	public void setSpatialDistribution(SpatialDistribution spatialDistribution) { this.spatialDistribution = spatialDistribution; }
 
-
-	public void setSpatialDistribution(SpatialDistribution spatialDistribution) { this.spatialDistribution = spatialDistribution; }	
+	@getter(FEATURE)
+	public String getSpatialDistributionFeature() {return constraintFeature;}	
 	
+	@setter(FEATURE)
 	public void setSpatialDistributionFeature(String feature) { this.constraintFeature = feature; }
 	
 	public void setSpatialDistributionCapacity(int capacity) { this.capacityConstraintDistribution = capacity; }
@@ -304,7 +317,6 @@ public class GamaPopGenerator implements IValue {
 	public void setSpatialDistributionDensity(double density) { this.densityConstraintDistribution = density; }
 	
 	@SuppressWarnings("rawtypes")
-	// TODO add more distribution...
 	public ISpatialDistribution getSpatialDistribution(SPLVectorFile sfGeometries, IScope scope) {
 		switch(getSpatialDistribution().getSDP()) {
 			case NUMBER :  
