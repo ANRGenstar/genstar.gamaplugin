@@ -406,7 +406,7 @@ public class GenstarGenerationOperators {
 			if(sfGeomsF != null) {
 				
 				// Take usable attribute from the file, e.g. for capacity constraint based spatial distribution
-				List<String> att = gen.getSpatialDistributionFeature() == "" ? 
+				List<String> att = gen.getSpatialDistributionFeature().isEmpty() || gen.getSpatialDistributionFeature().equals("") ? 
 						null : Arrays.asList(gen.getSpatialDistributionFeature());
 				
 				sfGeoms = SPLGeofileBuilder.getShapeFile(sfGeomsF, att, null);
