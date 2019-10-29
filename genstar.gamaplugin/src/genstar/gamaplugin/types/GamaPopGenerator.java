@@ -83,7 +83,7 @@ public class GamaPopGenerator implements IValue {
 	AttributeDictionary inputAttributes ;
 	
 	public final static String IPF = "ipf";
-	public boolean ipf;
+	boolean ipf;
 	
 	//////////////////////////////////////////////
 	// Attirbute for the Spll localization

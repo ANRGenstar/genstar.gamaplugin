@@ -146,13 +146,13 @@ public class GenstarGenerationOperators {
 					sampler = hierarchicalInfAlgo.inferSRSampler(distribution, new GosplHierarchicalSampler());
 				} catch (IllegalDistributionCreation e2) {
 					// TODO Auto-generated catch block
-					e2.printStackTrace();
+					throw GamaRuntimeException.error(e2.getLocalizedMessage(),scope);
 				}
 				break;
 			case DS: // DIRECT SAMPLING | DEFAULT
 			default:
 				ISyntheticReconstructionAlgo<IDistributionSampler> distributionInfAlgo = null;
-				if (gen.ipf) {
+				if (gen.getIPF()) {
 					try {
 						gdb.buildSamples();
 					} catch (final IOException | InvalidSurveyFormatException 
@@ -201,7 +201,7 @@ public class GenstarGenerationOperators {
 			try {
 				gdb.buildSamples(); // Retrieve sample
 			} catch (final RuntimeException | IOException | InvalidSurveyFormatException | InvalidFormatException e) {
-				e.printStackTrace();
+				throw GamaRuntimeException.error(e.getLocalizedMessage(), scope);
 			} 
 
 			IPopulation p = gdb.getRawSamples().stream().findFirst().orElseThrow(NullPointerException::new);
