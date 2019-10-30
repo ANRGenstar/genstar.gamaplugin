@@ -35,8 +35,9 @@ public class GenStarConstant {
 	 *
 	 */
 	public enum SpatialDistribution implements IGSAlias {
-		AREA (Arrays.asList("area"),SpatialDistributionConcept.SIMPLE),
-		CAPACITY (Arrays.asList("capacity"),SpatialDistributionConcept.NUMBER),
+		DEFAULT (Arrays.asList("","uniform"),SpatialDistributionConcept.SIMPLE),
+		AREA (Arrays.asList("area","areal"),SpatialDistributionConcept.SIMPLE),
+		CAPACITY (Arrays.asList("capacity","number"),SpatialDistributionConcept.NUMBER),
 		DENSITY (Arrays.asList("density"),SpatialDistributionConcept.NUMBER);
 		
 		public enum SpatialDistributionConcept {
@@ -44,14 +45,14 @@ public class GenStarConstant {
 		}
 		
 		List<String> alias;
-		SpatialDistributionConcept sdp;
+		SpatialDistributionConcept concept;
 		
-		private SpatialDistribution(List<String> alias, SpatialDistributionConcept sdp) { this.alias = alias; this.sdp = sdp;}
+		private SpatialDistribution(List<String> alias, SpatialDistributionConcept sdp) { this.alias = alias; this.concept = sdp;}
 		
 		@Override
 		public List<String> getAlias() { return alias; }
 		
-		public SpatialDistributionConcept getSDP() {return sdp;}
+		public SpatialDistributionConcept getConcept() {return concept;}
 		
 	}
 	

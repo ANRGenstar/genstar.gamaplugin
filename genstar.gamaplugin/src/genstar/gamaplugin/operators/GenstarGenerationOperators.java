@@ -407,7 +407,7 @@ public class GenstarGenerationOperators {
 				
 				// Take usable attribute from the file, e.g. for capacity constraint based spatial distribution
 				List<String> att = gen.getSpatialDistributionFeature().isEmpty() || gen.getSpatialDistributionFeature().equals("") ? 
-						null : Arrays.asList(gen.getSpatialDistributionFeature());
+						new ArrayList<>() : Arrays.asList(gen.getSpatialDistributionFeature());
 				
 				sfGeoms = SPLGeofileBuilder.getShapeFile(sfGeomsF, att, null);
 				if(gen.getMaxDistanceLocalize() > 0.0) {

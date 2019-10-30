@@ -50,7 +50,10 @@ public class GenstarLocalizeOperators {
 		examples = @example(value = "my_pop_generator add_spatial_distribution \"area\"", test = false))
 	@no_test
 	public static GamaPopGenerator addSpatialDistribution(IScope scope, GamaPopGenerator gen, String distribution) {
-		gen.setSpatialDistribution(GenStarGamaUtils.toSpatialDistribution(distribution));
+		SpatialDistribution sd = GenStarGamaUtils.toSpatialDistribution(distribution);
+		if(sd == null){throw GamaRuntimeException.error("The spatial distribution "+distribution
+				+" does not match any Gen* spatial distribution - see", scope);}
+		gen.setSpatialDistribution(sd);
 		return gen;
 	}
 	

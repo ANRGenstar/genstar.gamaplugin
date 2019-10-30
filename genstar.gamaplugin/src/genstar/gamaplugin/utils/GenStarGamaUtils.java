@@ -38,6 +38,8 @@ public class GenStarGamaUtils {
 			return SpatialDistribution.AREA;
 		if(SpatialDistribution.CAPACITY.getMatch(distribution))
 			return SpatialDistribution.CAPACITY;
+		if(SpatialDistribution.DENSITY.getMatch(distribution))
+			return SpatialDistribution.DENSITY;
 		return null;
 	}
 	

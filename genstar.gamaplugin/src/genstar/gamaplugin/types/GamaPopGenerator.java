@@ -29,6 +29,7 @@ import core.metamodel.entity.ADemoEntity;
 import core.metamodel.io.GSSurveyWrapper;
 import genstar.gamaplugin.utils.GenStarConstant.GenerationAlgorithm;
 import genstar.gamaplugin.utils.GenStarConstant.SpatialDistribution;
+import genstar.gamaplugin.utils.GenStarConstant.SpatialDistribution.SpatialDistributionConcept;
 import msi.gama.common.interfaces.IValue;
 import msi.gama.metamodel.agent.IAgent;
 import msi.gama.precompiler.GamlAnnotations.doc;
@@ -101,12 +102,16 @@ public class GamaPopGenerator implements IValue {
 	boolean localizeOverlaps;
 	
 	// Spatial distribution
-	SpatialDistribution spatialDistribution;
+	public final static String SPATIALDISTRIBUTION = "spatial_distribution";
+	private SpatialDistribution spatialDistribution;
 	
 	public final static String FEATURE = "constraint_feature";
 	private String constraintFeature = "";
 	
+	public final static String CAPACITYCONSTANT = "capacity_constant";
 	private double capacityConstraintDistribution = -1d;
+	
+	public final static String DENSITYCONSTANT = "density_constant";
 	private double densityConstraintDistribution = -1d;
 	
 	String crs;
@@ -303,7 +308,10 @@ public class GamaPopGenerator implements IValue {
 	// Spatial distribution
 	// --------------------
 	
+	@getter(SPATIALDISTRIBUTION)
 	public SpatialDistribution getSpatialDistribution() { return spatialDistribution; }
+	
+	@setter(SPATIALDISTRIBUTION)
 	public void setSpatialDistribution(SpatialDistribution spatialDistribution) { this.spatialDistribution = spatialDistribution; }
 
 	@getter(FEATURE)
@@ -312,13 +320,22 @@ public class GamaPopGenerator implements IValue {
 	@setter(FEATURE)
 	public void setSpatialDistributionFeature(String feature) { this.constraintFeature = feature; }
 	
+	@getter(CAPACITYCONSTANT)
+	public int getSpatialDsitrbutionCapacity() {return (int) this.capacityConstraintDistribution;}
+	
+	@setter(CAPACITYCONSTANT)
 	public void setSpatialDistributionCapacity(int capacity) { this.capacityConstraintDistribution = capacity; }
 	
+	@setter(DENSITYCONSTANT)
+	public double getSpatialDistributionDensity() {return this.densityConstraintDistribution;}
+	
+	@setter(DENSITYCONSTANT)
 	public void setSpatialDistributionDensity(double density) { this.densityConstraintDistribution = density; }
 	
 	@SuppressWarnings("rawtypes")
-	public ISpatialDistribution getSpatialDistribution(SPLVectorFile sfGeometries, IScope scope) {
-		switch(getSpatialDistribution().getSDP()) {
+	public ISpatialDistribution getSpatialDistribution(SPLVectorFile sfGeometries, IScope scope) {		
+		if(getSpatialDistribution() == null) {setSpatialDistribution(SpatialDistribution.DEFAULT);}
+		switch(getSpatialDistribution().getConcept()) {
 			case NUMBER :  
 				SpatialConstraintMaxNumber scmn = null;
 				boolean featureBased = false;

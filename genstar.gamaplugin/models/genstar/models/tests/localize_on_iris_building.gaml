@@ -25,8 +25,8 @@ global {
 	//path to the file that will be used as support for the spatial regression (bring additional spatial data)
 //	string stringPathToLandUseGrid <- "../../data/raster/occsol_rouen.tif";
 
-	bool sample_based parameter:true init:true;
-	bool capacity_building parameter:true init:true;
+	bool sample_based parameter:true init:false;
+	bool capacity_building parameter:true init:false;
 
 	geometry shape <- envelope(buildings_shp);
 
