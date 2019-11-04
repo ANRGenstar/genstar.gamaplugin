@@ -326,7 +326,7 @@ public class GamaPopGenerator implements IValue {
 	@setter(CAPACITYCONSTANT)
 	public void setSpatialDistributionCapacity(int capacity) { this.capacityConstraintDistribution = capacity; }
 	
-	@setter(DENSITYCONSTANT)
+	@getter(DENSITYCONSTANT)
 	public double getSpatialDistributionDensity() {return this.densityConstraintDistribution;}
 	
 	@setter(DENSITYCONSTANT)
