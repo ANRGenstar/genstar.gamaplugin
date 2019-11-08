@@ -110,9 +110,13 @@ public class GamaPopGenerator implements IValue {
 	
 	public final static String CAPACITYCONSTANT = "capacity_constant";
 	private double capacityConstraintDistribution = -1d;
+	public final static String CAPACITYLIMIT = "capacity_limit";
+	private double capacityConstraintLimit = -1d;
 	
 	public final static String DENSITYCONSTANT = "density_constant";
 	private double densityConstraintDistribution = -1d;
+	public final static String DENSITYLIMIT = "density_limit";
+	private double densityConstraintLimit = -1d;
 	
 	String crs;
 
@@ -326,11 +330,23 @@ public class GamaPopGenerator implements IValue {
 	@setter(CAPACITYCONSTANT)
 	public void setSpatialDistributionCapacity(int capacity) { this.capacityConstraintDistribution = capacity; }
 	
+	@getter(CAPACITYLIMIT)
+	public int getSpatialDistributionCapacityLimit() {return (int) this.capacityConstraintLimit;}
+	
+	@setter(CAPACITYLIMIT)
+	public void setSpatialDistributionCapacityLimit(int limit) {this.capacityConstraintLimit = limit;}
+	
 	@getter(DENSITYCONSTANT)
 	public double getSpatialDistributionDensity() {return this.densityConstraintDistribution;}
 	
 	@setter(DENSITYCONSTANT)
 	public void setSpatialDistributionDensity(double density) { this.densityConstraintDistribution = density; }
+	
+	@getter(DENSITYLIMIT)
+	public int getSpatialDistributionDensityLimit() {return (int) this.densityConstraintLimit;}
+	
+	@setter(DENSITYLIMIT)
+	public void setSpatialDistributionDensityLimit(int limit) {this.densityConstraintLimit = limit;}
 	
 	@SuppressWarnings("rawtypes")
 	public ISpatialDistribution getSpatialDistribution(SPLVectorFile sfGeometries, IScope scope) {		
@@ -357,6 +373,7 @@ public class GamaPopGenerator implements IValue {
 							if(capacityConstraintDistribution <= 0) {capacityConstraintDistribution = 1;}
 							scmn = new SpatialConstraintMaxNumber(sfGeometries.getGeoEntity(), capacityConstraintDistribution);
 						}
+						if (getSpatialDistributionCapacityLimit() > 0) { scmn.setMaxIncrease(getSpatialDistributionCapacityLimit()); }
 						break;
 					case DENSITY :
 						if(featureBased) {
@@ -367,6 +384,7 @@ public class GamaPopGenerator implements IValue {
 							throw GamaRuntimeException.error(new IllegalArgumentException("A density or feature name must be specified for "
 									+ "a density based constraint spatial distribution").getMessage(), scope);
 						}
+						if (getSpatialDistributionDensityLimit() > 0) { scmn.setMaxIncrease(getSpatialDistributionDensityLimit()); }
 						break;
 					default: break;
 				}

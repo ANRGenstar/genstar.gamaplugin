@@ -145,7 +145,6 @@ public class GenstarGenerationOperators {
 				try {
 					sampler = hierarchicalInfAlgo.inferSRSampler(distribution, new GosplHierarchicalSampler());
 				} catch (IllegalDistributionCreation e2) {
-					// TODO Auto-generated catch block
 					throw GamaRuntimeException.error(e2.getLocalizedMessage(),scope);
 				}
 				break;
@@ -157,7 +156,7 @@ public class GenstarGenerationOperators {
 						gdb.buildSamples();
 					} catch (final IOException | InvalidSurveyFormatException 
 							| InvalidFormatException e) {
-						throw new RuntimeException(e);
+						throw GamaRuntimeException.error(e.getLocalizedMessage(), scope);
 					}
 
 					// Input sample
@@ -217,7 +216,7 @@ public class GenstarGenerationOperators {
 						+" based combinatorial optimization population synthesis have not yet been ported from API to plugin ! "
 						+ "if necessary, requests dev at https://github.com/ANRGenstar/genstar.gamaplugin ;)");
 			case RS: // RANDOM SEARCH
-				throw new UnsupportedOperationException(EGosplAlgorithm.SA.name
+				throw new UnsupportedOperationException(EGosplAlgorithm.RS.name
 						+" based combinatorial optimization population synthesis have not yet been ported from API to plugin ! "
 						+ "if necessary, requests dev at https://github.com/ANRGenstar/genstar.gamaplugin ;)");
 			case US : // UNIFORM & RAW SAMPLING | DEFAULT
