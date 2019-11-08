@@ -71,7 +71,7 @@ global {
 		
 		if capacity_building { 
 			pop_gen <- pop_gen localize_on_geometries(capacity_buildings_shp.path);
-			pop_gen <- pop_gen add_capacity_distribution("capacity");
+			pop_gen <- pop_gen add_capacity_distribution("capacity",1);
 		} else {
 			pop_gen <- pop_gen localize_on_geometries(buildings_shp.path);
 		}

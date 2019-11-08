@@ -151,7 +151,7 @@ public class GenstarGenerationOperators {
 			case DS: // DIRECT SAMPLING | DEFAULT
 			default:
 				ISyntheticReconstructionAlgo<IDistributionSampler> distributionInfAlgo = null;
-				if (gen.getIPF()) {
+				if (gen.ipf) {
 					try {
 						gdb.buildSamples();
 					} catch (final IOException | InvalidSurveyFormatException 

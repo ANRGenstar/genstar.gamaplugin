@@ -29,7 +29,6 @@ import core.metamodel.entity.ADemoEntity;
 import core.metamodel.io.GSSurveyWrapper;
 import genstar.gamaplugin.utils.GenStarConstant.GenerationAlgorithm;
 import genstar.gamaplugin.utils.GenStarConstant.SpatialDistribution;
-import genstar.gamaplugin.utils.GenStarConstant.SpatialDistribution.SpatialDistributionConcept;
 import msi.gama.common.interfaces.IValue;
 import msi.gama.metamodel.agent.IAgent;
 import msi.gama.precompiler.GamlAnnotations.doc;
@@ -65,11 +64,24 @@ import spll.popmapper.distribution.SpatialDistributionFactory;
 	@variable(name = "spatial_mapper_file", type = IType.LIST, of = IType.STRING, doc = {@doc("Returns the list of spatial files used to map the entities to areas") }),
 	@variable(name = "spatial_matcher_file", type = IType.STRING, doc = {@doc("Returns the spatial file used to match entities and areas") }),
 	// New var to include
-	@variable(name = GamaPopGenerator.IPF, type = IType.BOOL,
+	@variable(name = GamaPopGenerator.IPF, 
+			type = IType.BOOL,
+			init = "false",
 			doc = {@doc("Enable the use of IPF to extrapolate a joint distribution upon marginals and seed sample")}),
-	@variable(name = GamaPopGenerator.FEATURE, type=IType.STRING, 
+	@variable(name = GamaPopGenerator.FEATURE, 
+			type=IType.STRING, 
 			doc = {@doc("The spatial feature to setup capacity/density constraint for the spatial distribution")}
-			)
+			),
+	@variable(
+			name = GamaPopGenerator.CAPACITYLIMIT,
+			type = IType.INT,
+			init = "-1",
+			doc = @doc ("the capacity limit for capacity spatial constraint relaxation")),
+	@variable(
+			name = GamaPopGenerator.DENSITYLIMIT,
+			type = IType.FLOAT,
+			init = "-1.0",
+			doc = @doc ("the density limit for density spatial constraint relaxation"))
 })
 public class GamaPopGenerator implements IValue {
 
@@ -84,7 +96,7 @@ public class GamaPopGenerator implements IValue {
 	AttributeDictionary inputAttributes ;
 	
 	public final static String IPF = "ipf";
-	boolean ipf;
+	public boolean ipf;
 	
 	//////////////////////////////////////////////
 	// Attirbute for the Spll localization
@@ -240,7 +252,7 @@ public class GamaPopGenerator implements IValue {
 	public String getGenerationAlgorithm() { return generationAlgorithm; }
 	
 	@getter(IPF)
-	public boolean getIPF() { return ipf; }
+	public boolean getIPF() { return this.ipf; }
 	
 	@setter(IPF)
 	public void setIPF(boolean ipf) { this.ipf = ipf; }
@@ -346,7 +358,7 @@ public class GamaPopGenerator implements IValue {
 	public int getSpatialDistributionDensityLimit() {return (int) this.densityConstraintLimit;}
 	
 	@setter(DENSITYLIMIT)
-	public void setSpatialDistributionDensityLimit(int limit) {this.densityConstraintLimit = limit;}
+	public void setSpatialDistributionDensityLimit(double limit) {this.densityConstraintLimit = limit;}
 	
 	@SuppressWarnings("rawtypes")
 	public ISpatialDistribution getSpatialDistribution(SPLVectorFile sfGeometries, IScope scope) {		
