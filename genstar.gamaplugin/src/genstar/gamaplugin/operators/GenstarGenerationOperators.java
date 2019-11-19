@@ -72,6 +72,7 @@ import spll.io.SPLRasterFile;
 import spll.io.SPLVectorFile;
 import spll.io.exception.InvalidGeoFormatException;
 import spll.popmapper.SPLocalizer;
+import spll.popmapper.constraint.ISpatialConstraint;
 import spll.popmapper.normalizer.SPLUniformNormalizer;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
@@ -120,7 +121,8 @@ public class GenstarGenerationOperators {
 		
 		final EGosplAlgorithm algo = GenStarGamaUtils.toGosplAlgorithm(gen.getGenerationAlgorithm());
 		switch (algo.concept) {
-		case SR: // SYNTHETIC RECONSTRUCTION
+		// SYNTHETIC RECONSTRUCTION
+		case SR: 
 			try {
 				gdb.buildDataTables();  // Load and read input data
 			} catch (final RuntimeException | IOException | InvalidSurveyFormatException | InvalidFormatException e) {
@@ -195,8 +197,8 @@ public class GenstarGenerationOperators {
 			// BUILD THE POPULATION
 			population = new DistributionBasedGenerator(sampler).generate(targetPopulation);
 			break;
-			
-		case CO: // COMBINATORIAL OPTIMIZATION 
+		// COMBINATORIAL OPTIMIZATION 
+		case CO: 
 			try {
 				gdb.buildSamples(); // Retrieve sample
 			} catch (final RuntimeException | IOException | InvalidSurveyFormatException | InvalidFormatException e) {
@@ -400,7 +402,11 @@ public class GenstarGenerationOperators {
 		SPLVectorFile sfCensus = null;		
 		
 		if (sfGeomsF != null && !sfGeomsF.exists()) return population;			
-	 				
+	 		
+		// ----------
+		// SETUP SPATIAL ENTITIES, i.e. NESTS and MATCHES (e.g. Census area)
+		// ----------
+		
 		try {
 			if(sfGeomsF != null) {
 				
@@ -416,30 +422,37 @@ public class GenstarGenerationOperators {
 				gen.setCrs(sfGeoms.getWKTCoordinateReferentSystem());				
 			}
 			
-			if(sfCensusF != null) {			
-				sfCensus = SPLGeofileBuilder.getShapeFile(sfCensusF, null); 
-			}
+			if(sfCensusF != null) { sfCensus = SPLGeofileBuilder.getShapeFile(sfCensusF, null); }
+			
 		} catch (IOException | InvalidGeoFormatException | GSIllegalRangedData e) {
 			throw GamaRuntimeException.error(e.getMessage(), scope);
 		}
 		
-		// SETUP THE LOCALIZER
+		// --------
+		// SETUP THE LOCALIZER WITH DEFINED SPATIAL ENTITIES
+		// --------
+		
 		SPLocalizer localizer;		
 		if(sfGeoms != null) {
 			localizer = new SPLocalizer(population, sfGeoms);	
 			localizer.setDistribution(gen.getSpatialDistribution(sfGeoms, scope));
+			/*
+			 * When nests are defined, census became 
+			 */
+			if (sfCensus != null) {
+				localizer.setMatcher(sfCensus, gen.getStringOfCensusIdInCSVfile(), gen.getStringOfCensusIdInShapefile());				
+			}
 		} else {
 			localizer = new SPLocalizer(population, sfCensus);
 			localizer.setDistribution(gen.getSpatialDistribution(sfCensus, scope));			
-		}
+		}		
 		
-		// SETUP GEOGRAPHICAL MATCHER
-		// use of the IRIS attribute of the population
-		if (sfCensus != null) {
-			localizer.setMatcher(sfCensus, gen.getStringOfCensusIdInCSVfile(), gen.getStringOfCensusIdInShapefile());				
-		}				
+		for(ISpatialConstraint cs : gen.getConstraints(sfGeoms, scope)) { localizer.addConstraint(cs); }
 
-		// SETUP REGRESSION
+		// ----------
+		// SETUP GEOGRAPHICAL MAPPER a.k.a. geographical regression (or statistical / machine learning)
+		//  ---------
+		
 		List<IGSGeofile<? extends AGeoEntity<? extends IValue>, ? extends IValue>> endogeneousVarFile = new ArrayList<>();
 		for(String path : gen.getPathAncilaryGeofiles()){
 			try {
@@ -453,14 +466,7 @@ public class GenstarGenerationOperators {
 		
 		if (!endogeneousVarFile.isEmpty())
 			try {
-				// TODO cntingency ID ????? 
-//				if (gen.getSpatialContingencyId() != null && !gen.getSpatialContingencyId().isEmpty()) {
-//					localizer.setMapper(endogeneousVarFile.get(0), gen.getSpatialContingencyId());				
-//				}
-//				else 
-				if (sfCensus != null)
-					localizer.setMapper(endogeneousVarFile, new ArrayList<>(), new LMRegressionOLS(), new SPLUniformNormalizer(0, SPLRasterFile.DEF_NODATA));
-				
+				localizer.setMapper(endogeneousVarFile, new ArrayList<>(), new LMRegressionOLS(), new SPLUniformNormalizer(0, SPLRasterFile.DEF_NODATA));
 			} catch (IndexOutOfBoundsException | IllegalRegressionException 
 					| IllegalArgumentException | IOException | TransformException 
 					| ExecutionException | GSMapperException 
@@ -470,7 +476,10 @@ public class GenstarGenerationOperators {
 				Thread.currentThread().interrupt();
 			} 
 		
-		//localize the population
+		// ----------
+		// ACTUALLY LOCALIZE SYNTHETIC ENTITIES
+		// ----------
+		
 		return localizer.localisePopulation();		
 	}
 	

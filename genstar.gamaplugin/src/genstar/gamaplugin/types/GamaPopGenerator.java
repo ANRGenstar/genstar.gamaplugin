@@ -29,6 +29,7 @@ import core.metamodel.entity.ADemoEntity;
 import core.metamodel.io.GSSurveyWrapper;
 import genstar.gamaplugin.utils.GenStarConstant.GenerationAlgorithm;
 import genstar.gamaplugin.utils.GenStarConstant.SpatialDistribution;
+import genstar.gamaplugin.utils.GenStarGamaConstraintBuilder;
 import msi.gama.common.interfaces.IValue;
 import msi.gama.metamodel.agent.IAgent;
 import msi.gama.precompiler.GamlAnnotations.doc;
@@ -48,6 +49,7 @@ import spin.SpinPopulation;
 import spin.algo.generator.ISpinNetworkGenerator;
 import spll.entity.SpllFeature;
 import spll.io.SPLVectorFile;
+import spll.popmapper.constraint.ISpatialConstraint;
 import spll.popmapper.constraint.SpatialConstraintMaxDensity;
 import spll.popmapper.constraint.SpatialConstraintMaxNumber;
 import spll.popmapper.distribution.ISpatialDistribution;
@@ -68,20 +70,13 @@ import spll.popmapper.distribution.SpatialDistributionFactory;
 			type = IType.BOOL,
 			init = "false",
 			doc = {@doc("Enable the use of IPF to extrapolate a joint distribution upon marginals and seed sample")}),
-	@variable(name = GamaPopGenerator.FEATURE, 
+	@variable(name = GamaPopGenerator.D_FEATURE, 
 			type=IType.STRING, 
-			doc = {@doc("The spatial feature to setup capacity/density constraint for the spatial distribution")}
-			),
-	@variable(
-			name = GamaPopGenerator.CAPACITYLIMIT,
-			type = IType.INT,
-			init = "-1",
-			doc = @doc ("the capacity limit for capacity spatial constraint relaxation")),
-	@variable(
-			name = GamaPopGenerator.DENSITYLIMIT,
-			type = IType.FLOAT,
-			init = "-1.0",
-			doc = @doc ("the density limit for density spatial constraint relaxation"))
+			doc = {@doc("The spatial feature to based spatial distribution of nest uppon")}),
+	@variable(name = GamaPopGenerator.C_FEATURE, 
+			type=IType.STRING, 
+			doc = {@doc("The spatial feature to setup capacity/density constraint to filter acceptable nests")}),
+
 })
 public class GamaPopGenerator implements IValue {
 
@@ -117,18 +112,14 @@ public class GamaPopGenerator implements IValue {
 	public final static String SPATIALDISTRIBUTION = "spatial_distribution";
 	private SpatialDistribution spatialDistribution;
 	
-	public final static String FEATURE = "constraint_feature";
+	public final static String D_FEATURE = "distribution_feature";
+	private String distributionFeature = "";
+	
+	public final static String C_FEATURE = "constraint_feature";
 	private String constraintFeature = "";
-	
-	public final static String CAPACITYCONSTANT = "capacity_constant";
-	private double capacityConstraintDistribution = -1d;
-	public final static String CAPACITYLIMIT = "capacity_limit";
-	private double capacityConstraintLimit = -1d;
-	
-	public final static String DENSITYCONSTANT = "density_constant";
-	private double densityConstraintDistribution = -1d;
-	public final static String DENSITYLIMIT = "density_limit";
-	private double densityConstraintLimit = -1d;
+
+	public final static String CONSTRAINTS = "spatial_constraints";
+	private GenStarGamaConstraintBuilder cBuilder;
 	
 	String crs;
 
@@ -154,6 +145,8 @@ public class GamaPopGenerator implements IValue {
 	
 		networkGenerators = new HashMap<>();		
 		mapEntitiesAgent = new HashMap<>();
+		
+		cBuilder = new GenStarGamaConstraintBuilder();
 	}
 	
 	
@@ -330,35 +323,11 @@ public class GamaPopGenerator implements IValue {
 	@setter(SPATIALDISTRIBUTION)
 	public void setSpatialDistribution(SpatialDistribution spatialDistribution) { this.spatialDistribution = spatialDistribution; }
 
-	@getter(FEATURE)
-	public String getSpatialDistributionFeature() {return constraintFeature;}	
+	@getter(D_FEATURE)
+	public String getSpatialDistributionFeature() {return distributionFeature;}	
 	
-	@setter(FEATURE)
-	public void setSpatialDistributionFeature(String feature) { this.constraintFeature = feature; }
-	
-	@getter(CAPACITYCONSTANT)
-	public int getSpatialDsitrbutionCapacity() {return (int) this.capacityConstraintDistribution;}
-	
-	@setter(CAPACITYCONSTANT)
-	public void setSpatialDistributionCapacity(int capacity) { this.capacityConstraintDistribution = capacity; }
-	
-	@getter(CAPACITYLIMIT)
-	public int getSpatialDistributionCapacityLimit() {return (int) this.capacityConstraintLimit;}
-	
-	@setter(CAPACITYLIMIT)
-	public void setSpatialDistributionCapacityLimit(int limit) {this.capacityConstraintLimit = limit;}
-	
-	@getter(DENSITYCONSTANT)
-	public double getSpatialDistributionDensity() {return this.densityConstraintDistribution;}
-	
-	@setter(DENSITYCONSTANT)
-	public void setSpatialDistributionDensity(double density) { this.densityConstraintDistribution = density; }
-	
-	@getter(DENSITYLIMIT)
-	public int getSpatialDistributionDensityLimit() {return (int) this.densityConstraintLimit;}
-	
-	@setter(DENSITYLIMIT)
-	public void setSpatialDistributionDensityLimit(double limit) {this.densityConstraintLimit = limit;}
+	@setter(D_FEATURE)
+	public void setSpatialDistributionFeature(String feature) { this.distributionFeature = feature; }
 	
 	@SuppressWarnings("rawtypes")
 	public ISpatialDistribution getSpatialDistribution(SPLVectorFile sfGeometries, IScope scope) {		
@@ -366,7 +335,6 @@ public class GamaPopGenerator implements IValue {
 		switch(getSpatialDistribution().getConcept()) {
 			case NUMBER :  
 				SpatialConstraintMaxNumber scmn = null;
-				boolean featureBased = false;
 				if (constraintFeature != null && !Strings.isEmpty(constraintFeature)) {
 					List<SpllFeature> sf = sfGeometries.getGeoEntity().stream().filter(f -> f.getAttributes()
 							.stream().noneMatch(af -> af.getAttributeName().equalsIgnoreCase(constraintFeature)))
@@ -375,28 +343,15 @@ public class GamaPopGenerator implements IValue {
 						throw GamaRuntimeException.error("The specified capacity constraint feature "
 							+constraintFeature+" is not present in "+Arrays.asList(sf).toString(), scope);
 					}
-					featureBased = true;
+				} else {
+					throw GamaRuntimeException.error("You must specified a spatial feature (attribute) to based distribution upon", scope);
 				}
 				switch(getSpatialDistribution()) {
 					case CAPACITY :
-						if(featureBased) {
-							scmn = new SpatialConstraintMaxNumber(sfGeometries.getGeoEntity(), constraintFeature);
-						} else {
-							if(capacityConstraintDistribution <= 0) {capacityConstraintDistribution = 1;}
-							scmn = new SpatialConstraintMaxNumber(sfGeometries.getGeoEntity(), capacityConstraintDistribution);
-						}
-						if (getSpatialDistributionCapacityLimit() > 0) { scmn.setMaxIncrease(getSpatialDistributionCapacityLimit()); }
+						scmn = new SpatialConstraintMaxNumber(sfGeometries.getGeoEntity(), constraintFeature);
 						break;
 					case DENSITY :
-						if(featureBased) {
-							scmn = new SpatialConstraintMaxDensity(sfGeometries.getGeoEntity(), constraintFeature);
-						} else if(capacityConstraintDistribution > 0) {
-							scmn = new SpatialConstraintMaxDensity(sfGeometries.getGeoEntity(), densityConstraintDistribution);
-						} else {
-							throw GamaRuntimeException.error(new IllegalArgumentException("A density or feature name must be specified for "
-									+ "a density based constraint spatial distribution").getMessage(), scope);
-						}
-						if (getSpatialDistributionDensityLimit() > 0) { scmn.setMaxIncrease(getSpatialDistributionDensityLimit()); }
+						scmn = new SpatialConstraintMaxDensity(sfGeometries.getGeoEntity(), constraintFeature);
 						break;
 					default: break;
 				}
@@ -415,7 +370,24 @@ public class GamaPopGenerator implements IValue {
 		}
 	}
 	
-
+	
+	// ------------------
+	// Spatial constraint
+	// ------------------
+	
+	@getter(CONSTRAINTS)
+	public GenStarGamaConstraintBuilder getConstraintBuilder() {
+		return this.cBuilder;
+	}
+	
+	public Collection<ISpatialConstraint> getConstraints(SPLVectorFile sfGeometries, IScope scope) {
+		return this.cBuilder.buildConstraints(sfGeometries.getGeoEntity());
+	}
+	
+	// -------------------------
+	// Mapper / ancilary methods
+	// -------------------------
+	
 	public List<String> getPathAncilaryGeofiles() {
 		return pathAncilaryGeofiles;
 	}
@@ -428,6 +400,9 @@ public class GamaPopGenerator implements IValue {
 		this.pathAncilaryGeofiles = pathAncilaryGeofiles;
 	}
 
+	// -----------------------
+	// Network related methods
+	// -----------------------
 
 	public boolean isSocialPopulation() {
 		return !networkGenerators.isEmpty();

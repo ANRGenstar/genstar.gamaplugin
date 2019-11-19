@@ -56,6 +56,19 @@ public class GenStarConstant {
 		
 	}
 	
+	public enum SpatialConstraint implements IGSAlias {
+		CAPACITY (Arrays.asList("capacity","number","threshold")),
+		DENSITY (Arrays.asList("density")),
+		DISTANCE (Arrays.asList("distance","proximity"));
+		
+		private List<String> alias;
+		
+		private SpatialConstraint(List<String> alias) {this.alias = alias;}
+		
+		@Override
+		public List<String> getAlias() {return alias;}
+	}
+	
 	/**
 	 * The generation algorithms available in the plugin
 	 * 
