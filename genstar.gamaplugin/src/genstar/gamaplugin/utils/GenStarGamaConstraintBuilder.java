@@ -3,7 +3,6 @@ package genstar.gamaplugin.utils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import core.metamodel.entity.AGeoEntity;
@@ -22,7 +21,7 @@ import spll.popmapper.constraint.SpatialConstraintMaxNumber;
  */
 public class GenStarGamaConstraintBuilder {
 
-	private List<SpatialConstraint> constraints; 
+	private Collection<SpatialConstraint> constraints; 
 	
 	static final double DENSITY_DEFAULT_STEP =  0.1;
 	String densityFeature;
@@ -44,10 +43,22 @@ public class GenStarGamaConstraintBuilder {
 	private double distanceStep;
 	private int distancePriority;
 	
-	public GenStarGamaConstraintBuilder() {}
+	public GenStarGamaConstraintBuilder() { this.constraints = new HashSet<>(); }
 	
+	/**
+	 * Get the constraints that have been setup to be created by this builder
+	 * @return
+	 */
 	public Collection<SpatialConstraint> getConstraints() {
 		return Collections.unmodifiableCollection(this.constraints);
+	}
+	
+	/**
+	 * Test if any constraint have been setup to be created by the builder
+	 * @return
+	 */
+	public boolean hasConstraints() {
+		return !this.constraints.isEmpty();
 	}
 	
 	/**
@@ -56,8 +67,8 @@ public class GenStarGamaConstraintBuilder {
 	 * @param nests
 	 * @return The Collection (HashSet) of {@link ISpatialConstraint} built
 	 */
-	public Collection<ISpatialConstraint> buildConstraints(Collection<? extends AGeoEntity<? extends IValue>> nests) {
-		if(constraints.isEmpty()) { throw new IllegalArgumentException("You must have at least one constraint setup to use the builder"); }
+	public Collection<ISpatialConstraint> buildConstraints(Collection<? extends AGeoEntity<? extends IValue>> nests) throws IllegalStateException {
+		if(!hasConstraints()) { throw new IllegalStateException("You must have at least one constraint setup to use the builder"); }
 		Collection<ISpatialConstraint> buildConstraints = new HashSet<>();
 		for(SpatialConstraint sc : this.constraints) {
 			switch(sc) {
@@ -93,7 +104,7 @@ public class GenStarGamaConstraintBuilder {
 		this.densityLimit = limit;
 		this.densityStep = step > 0 ? step : DENSITY_DEFAULT_STEP;
 		this.densityPriority = priority;
-		this.constraints.add(SpatialConstraint.CAPACITY);
+		this.constraints.add(SpatialConstraint.DENSITY);
 	}
 	
 	/**
@@ -140,7 +151,7 @@ public class GenStarGamaConstraintBuilder {
 		this.capacityLimit = limit;
 		this.capacityStep = step > 0 ? step : CAPACITY_DEFAULT_STEP;
 		this.capacityPriority = priority;
-		this.constraints.add(SpatialConstraint.DENSITY);
+		this.constraints.add(SpatialConstraint.CAPACITY);
 	}
 	
 	/**

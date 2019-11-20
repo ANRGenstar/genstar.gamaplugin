@@ -395,7 +395,7 @@ public class GenstarGenerationOperators {
 	
 	
 	private static IPopulation spatializePopulation(IScope scope, GamaPopGenerator gen, IPopulation population) {
-		File sfGeomsF = gen.getPathNestedGeometries() == null ? null : new File(gen.getPathNestedGeometries());
+		File sfGeomsF = gen.getPathNestGeometries() == null ? null : new File(gen.getPathNestGeometries());
 		File sfCensusF = gen.getPathCensusGeometries() == null ? null : new File(gen.getPathCensusGeometries());
 
 		SPLVectorFile sfGeoms = null;
@@ -447,7 +447,13 @@ public class GenstarGenerationOperators {
 			localizer.setDistribution(gen.getSpatialDistribution(sfCensus, scope));			
 		}		
 		
-		for(ISpatialConstraint cs : gen.getConstraints(sfGeoms, scope)) { localizer.addConstraint(cs); }
+		try {
+			for(ISpatialConstraint cs : gen.getConstraints(sfGeoms, scope)) { localizer.addConstraint(cs); }
+		} catch (IllegalStateException e) {
+			if (gen.getConstraintBuilder().hasConstraints()) {
+				throw GamaRuntimeException.error("Builder "+gen.getConstraintBuilder()+" have not been able to create constraints", scope);
+			}
+		}
 
 		// ----------
 		// SETUP GEOGRAPHICAL MAPPER a.k.a. geographical regression (or statistical / machine learning)

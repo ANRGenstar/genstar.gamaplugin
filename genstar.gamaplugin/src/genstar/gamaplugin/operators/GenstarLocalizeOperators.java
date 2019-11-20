@@ -68,6 +68,16 @@ public class GenstarLocalizeOperators {
 		return gen;
 	}
 	
+	@operator(value = "add_capacity_constraint", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
+	@doc(value = "Define a spatial constraint (threshold) to filter acceptable nest based on attribute of the nest",
+		examples = @example(value = "my_pop_generator add_capacity_constraint (\"capacity\",100,2,2)", test = false))
+	@no_test
+	public static GamaPopGenerator addCapacityConstraint(IScope scope, GamaPopGenerator gen, String feature, int max, int step, int priority) {
+		GenStarGamaConstraintBuilder builder = gen.getConstraintBuilder();
+		builder.addCapacityConstraint(feature, -1, max, step, priority);
+		return gen;
+	}
+	
 	@operator(value = "add_density_constraint", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
 	@doc(value = "Define a spatial constraint density to filter acceptable nest",
 		examples = @example(value = "my_pop_generator add_capacity_constraint (0.2,0.4,0.05,10)", test = false))
@@ -75,6 +85,16 @@ public class GenstarLocalizeOperators {
 	public static GamaPopGenerator addDensityConstraint(IScope scope, GamaPopGenerator gen, double density, double max, double step, int priority) {
 		GenStarGamaConstraintBuilder builder = gen.getConstraintBuilder();
 		builder.addDensityConstraint("", density, max, step, priority);
+		return gen;
+	}
+	
+	@operator(value = "add_density_constraint", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
+	@doc(value = "Define a spatial constraint density to filter acceptable nest based on one of their attributes",
+		examples = @example(value = "my_pop_generator add_capacity_constraint (0.2,0.4,0.05,10)", test = false))
+	@no_test
+	public static GamaPopGenerator addDensityConstraint(IScope scope, GamaPopGenerator gen, String feature, double max, double step, int priority) {
+		GenStarGamaConstraintBuilder builder = gen.getConstraintBuilder();
+		builder.addDensityConstraint(feature, -1d, max, step, priority);
 		return gen;
 	}
 	
@@ -162,8 +182,7 @@ public class GenstarLocalizeOperators {
 	@no_test
 	public static GamaPopGenerator localizeOnGeometries(IScope scope, GamaPopGenerator gen, String stringPathToGeometriesShapefile) {
 		gen.setSpatializePopulation(true);
-		gen.setPathNestedGeometries(stringPathToGeometriesShapefile);
-		
+		gen.setPathNestGeometries(stringPathToGeometriesShapefile);
 		return gen;
 	}
 
@@ -174,7 +193,6 @@ public class GenstarLocalizeOperators {
 	public static GamaPopGenerator localizeOnCensus(IScope scope, GamaPopGenerator gen, String stringPathToCensusShapefile) {
 		gen.setSpatializePopulation(true);
 		gen.setPathCensusGeometries(stringPathToCensusShapefile);
-		
 		return gen;
 	}
 }

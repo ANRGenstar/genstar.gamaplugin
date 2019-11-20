@@ -86,6 +86,13 @@ public class GenStarConstant {
 		
 		@Override
 		public List<String> getAlias() { return alias; }
+		
+		public static GenerationAlgorithm getAlgorithm(String algorithm) {
+			if(DIRECTSAMPLING.getMatch(algorithm)) {return DIRECTSAMPLING;}
+			else if(HIERARCHICALSAMPLING.getMatch(algorithm)) {return HIERARCHICALSAMPLING;}
+			else if(UNIFORMSAMPLING.getMatch(algorithm)) {return UNIFORMSAMPLING;}
+			else throw new IllegalArgumentException(algorithm+": No such generation algorithm supported");
+		}
 	}
 	
 	/**

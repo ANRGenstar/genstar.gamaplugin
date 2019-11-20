@@ -26,7 +26,7 @@ global {
 //	string stringPathToLandUseGrid <- "../../data/raster/occsol_rouen.tif";
 
 	bool sample_based parameter:true init:false;
-	bool capacity_building parameter:true init:false;
+	bool capacity_building parameter:true init:true;
 
 	geometry shape <- envelope(buildings_shp);
 
@@ -69,19 +69,29 @@ global {
 		// -------------------------
 		
 		
+		int max_capacity <- 1;
 		if capacity_building { 
 			pop_gen <- pop_gen localize_on_geometries(capacity_buildings_shp.path);
-			pop_gen <- pop_gen add_capacity_distribution(1,1,2);
+			pop_gen <- pop_gen add_capacity_constraint(max_capacity,max_capacity,0,2);
 		} else {
 			pop_gen <- pop_gen localize_on_geometries(buildings_shp.path);
 		}
 		
 		pop_gen <- pop_gen localize_on_census(iris_shp.path);
 		
-		pop_gen <- pop_gen add_spatial_mapper(stringOfCensusIdInCSVfile,stringOfCensusIdInShapefile);
+		pop_gen <- pop_gen add_spatial_match(stringOfCensusIdInCSVfile,stringOfCensusIdInShapefile);
 
 		// -------------------------			
 		create people from: pop_gen;
+		// -------------------------
+		
+		list<int> building_content <- building collect length(people overlapping each.shape);
+		
+		list<int> over_crowded <- building_content where (each > max_capacity);
+		write "There is "+length(over_crowded)+" over crowded buildings: average = "+mean(over_crowded)+" | max = "+max(over_crowded);
+		
+		int well_sized_building <- building count (length(people overlapping each.shape) <= max_capacity);
+		write "There is "+well_sized_building+" building with 1 people top inside";
 	}
 }
 

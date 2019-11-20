@@ -11,7 +11,6 @@
 
 package genstar.gamaplugin.types;
 
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -58,24 +57,27 @@ import spll.popmapper.distribution.SpatialDistributionFactory;
 
 @vars({
 	// TODO : old var to clean
-	@variable(name = "attributes", type = IType.LIST, of = IType.STRING, doc = {@doc("Returns the list of attribute names") }),
+	@variable(name = GamaPopGenerator.ATTRIBUTES, type = IType.LIST, of = IType.STRING, doc = {@doc("Returns the list of attribute names") }),
 	@variable(name = "census_files", type = IType.LIST, of = IType.STRING, doc = {@doc("Returns the list of census files") }), 
 	@variable(name = "generation_algo", type = IType.STRING, doc = {@doc("Returns the name of the generation algorithm") }),
 	@variable(name = "mappers", type = IType.MAP, doc = {@doc("Returns the list of mapper") }),
-	@variable(name = "spatial_file", type = IType.STRING, doc = {@doc("Returns the spatial file used to localize entities") }),
+	
 	@variable(name = "spatial_mapper_file", type = IType.LIST, of = IType.STRING, doc = {@doc("Returns the list of spatial files used to map the entities to areas") }),
 	@variable(name = "spatial_matcher_file", type = IType.STRING, doc = {@doc("Returns the spatial file used to match entities and areas") }),
 	// New var to include
+	@variable(name = GamaPopGenerator.NESTS, 
+		type = IType.STRING, 
+		doc = {@doc("Returns the spatial file used to localize entities") }),
 	@variable(name = GamaPopGenerator.IPF, 
-			type = IType.BOOL,
-			init = "false",
-			doc = {@doc("Enable the use of IPF to extrapolate a joint distribution upon marginals and seed sample")}),
+		type = IType.BOOL,
+		init = "false",
+		doc = {@doc("Enable the use of IPF to extrapolate a joint distribution upon marginals and seed sample")}),
 	@variable(name = GamaPopGenerator.D_FEATURE, 
-			type=IType.STRING, 
-			doc = {@doc("The spatial feature to based spatial distribution of nest uppon")}),
+		type=IType.STRING, 
+		doc = {@doc("The spatial feature to based spatial distribution of nest uppon")}),
 	@variable(name = GamaPopGenerator.C_FEATURE, 
-			type=IType.STRING, 
-			doc = {@doc("The spatial feature to setup capacity/density constraint to filter acceptable nests")}),
+		type=IType.STRING, 
+		doc = {@doc("The spatial feature to setup capacity/density constraint to filter acceptable nests")}),
 
 })
 public class GamaPopGenerator implements IValue {
@@ -86,9 +88,15 @@ public class GamaPopGenerator implements IValue {
 	// Attirbute for the Gospl generation
 	//////////////////////////////////////////////
 	
+	public final static String GENERATION_ALGO = "GOSP_algorithm";
 	String generationAlgorithm;
+	
+	public final static String DEMOGRAPHIC_FILES = "demographic_files";
 	List<GSSurveyWrapper> inputFiles;
-	AttributeDictionary inputAttributes ;
+	
+	public final static String ATTRIBUTES_DICTIONARY = "demographic_dictionary";
+	public final static String ATTRIBUTES = "demographic_attributes";
+	AttributeDictionary inputAttributes;
 	
 	public final static String IPF = "ipf";
 	public boolean ipf;
@@ -102,7 +110,9 @@ public class GamaPopGenerator implements IValue {
 	String stringOfCensusIdInShapefile;
 	
 	String pathCensusGeometries;
-	String pathNestedGeometries;
+	
+	public final static String NESTS = "Nests_geometries";
+	String pathNestGeometries;
 
 	Double minDistanceLocalize;
 	Double maxDistanceLocalize;
@@ -132,7 +142,10 @@ public class GamaPopGenerator implements IValue {
 	Map<String, ISpinNetworkGenerator<? extends ADemoEntity>> networkGenerators;
 	Map<ADemoEntity, IAgent> mapEntitiesAgent;
 
-
+	
+	/**
+	 * Default constructor
+	 */
 	public GamaPopGenerator() {
 		generationAlgorithm = GenerationAlgorithm.DIRECTSAMPLING.getAlias().get(0);		
 		inputFiles = new ArrayList<>();
@@ -149,6 +162,7 @@ public class GamaPopGenerator implements IValue {
 		cBuilder = new GenStarGamaConstraintBuilder();
 	}
 	
+	// IValue constract
 	
 	@Override
 	public String serialize(boolean includingBuiltIn) {
@@ -165,35 +179,63 @@ public class GamaPopGenerator implements IValue {
 		return null;
 	}
 
+	// ACCESSOR FOR SP GENERATION
+	
 	public AttributeFactory getAttf() {
 		return AttributeFactory.getFactory();
 	}
 
-	public List<GSSurveyWrapper> getInputFiles() {
-		return inputFiles;
-	}
-
+	@setter(DEMOGRAPHIC_FILES)
 	public void setInputFiles(List<GSSurveyWrapper> inputFiles) {
 		this.inputFiles = inputFiles;
 	}
 
+	@getter(ATTRIBUTES_DICTIONARY)
 	public AttributeDictionary getInputAttributes() {
 		return inputAttributes;
 	}
 
+	@setter(ATTRIBUTES_DICTIONARY)
 	public void setInputAttributes(AttributeDictionary inputAttributes) {
 		this.inputAttributes = inputAttributes;
 	}
+	
+	@getter(ATTRIBUTES)
+	public IList<String> getAttributeName(){
+		IList<String> atts = GamaListFactory.create(Types.STRING);
+		for (Attribute<? extends core.metamodel.value.IValue> a : this.getInputAttributes().getAttributes())
+			atts.add(a.getAttributeName());
+		return atts;
+	}
+	
+	@getter(DEMOGRAPHIC_FILES)
+	public List<GSSurveyWrapper> getInputFiles() {
+		return inputFiles;
+	}
+	
+	public IList<String> getCensusFile(){
+		IList<String> f = GamaListFactory.create(Types.STRING);
+		for (GSSurveyWrapper a : this.getInputFiles()) f.add(a.getRelativePath().toString());
+		return f;
+	}
+	
+	@getter(GENERATION_ALGO)
+	public String getGenerationAlgorithm() { return generationAlgorithm; }
+	
+	public GenerationAlgorithm getGenstarGenerationAlgorithm() {return GenerationAlgorithm.getAlgorithm(this.generationAlgorithm); }
+	
+	@getter(IPF)
+	public boolean getIPF() { return this.ipf; }
+	
+	@setter(IPF)
+	public void setIPF(boolean ipf) { this.ipf = ipf; }
 
 	public void setGenerationAlgorithm(String generationAlgorithm) {
 		this.generationAlgorithm = generationAlgorithm;
 	}
 
-	public void setPathNestedGeometries(String pathGeometries) {
-		this.pathNestedGeometries = pathGeometries;
-		setSpatializePopulation(Paths.get(pathGeometries).toFile().exists());
-	}	
-
+	// ACCESSOR FOR SP LOCALIZATION
+	
 	public String getStringOfCensusIdInCSVfile() {
 		return stringOfCensusIdInCSVfile;
 	}
@@ -226,33 +268,14 @@ public class GamaPopGenerator implements IValue {
 		this.crs = crs;
 	}
 	
-	@getter("attributes")
-	public IList<String> getAttributeName(){
-		IList<String> atts = GamaListFactory.create(Types.STRING);
-		for (Attribute<? extends core.metamodel.value.IValue> a : this.getInputAttributes().getAttributes())
-			atts.add(a.getAttributeName());
-		return atts;
+	@getter(NESTS)
+	public String getPathNestGeometries() {
+		return this.pathNestGeometries;
 	}
 	
-	@getter("census_files")
-	public IList<String> getCensusFile(){
-		IList<String> f = GamaListFactory.create(Types.STRING);
-		for (GSSurveyWrapper a : this.getInputFiles()) f.add(a.getRelativePath().toString());
-		return f;
-	}
-	
-	@getter("generation_algo")
-	public String getGenerationAlgorithm() { return generationAlgorithm; }
-	
-	@getter(IPF)
-	public boolean getIPF() { return this.ipf; }
-	
-	@setter(IPF)
-	public void setIPF(boolean ipf) { this.ipf = ipf; }
-	
-	@getter("spatial_file")
-	public String getPathNestedGeometries() {
-		return pathNestedGeometries;
+	@setter(NESTS)
+	public void setPathNestGeometries(String path) {
+		this.pathNestGeometries = path;
 	}
 
 	public Collection<RecordAttribute<Attribute<? extends core.metamodel.value.IValue>, 
@@ -380,7 +403,7 @@ public class GamaPopGenerator implements IValue {
 		return this.cBuilder;
 	}
 	
-	public Collection<ISpatialConstraint> getConstraints(SPLVectorFile sfGeometries, IScope scope) {
+	public Collection<ISpatialConstraint> getConstraints(SPLVectorFile sfGeometries, IScope scope) throws IllegalStateException {
 		return this.cBuilder.buildConstraints(sfGeometries.getGeoEntity());
 	}
 	
