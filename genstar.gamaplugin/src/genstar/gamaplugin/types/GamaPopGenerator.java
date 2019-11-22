@@ -48,23 +48,23 @@ import spin.SpinPopulation;
 import spin.algo.generator.ISpinNetworkGenerator;
 import spll.entity.SpllFeature;
 import spll.io.SPLVectorFile;
-import spll.popmapper.constraint.ISpatialConstraint;
-import spll.popmapper.constraint.SpatialConstraintMaxDensity;
-import spll.popmapper.constraint.SpatialConstraintMaxNumber;
-import spll.popmapper.distribution.ISpatialDistribution;
-import spll.popmapper.distribution.SpatialDistributionFactory;
+import spll.localizer.constraint.ISpatialConstraint;
+import spll.localizer.constraint.SpatialConstraintMaxDensity;
+import spll.localizer.constraint.SpatialConstraintMaxNumber;
+import spll.localizer.distribution.ISpatialDistribution;
+import spll.localizer.distribution.SpatialDistributionFactory;
 
 
 @vars({
 	// TODO : old var to clean
 	@variable(name = GamaPopGenerator.ATTRIBUTES, type = IType.LIST, of = IType.STRING, doc = {@doc("Returns the list of attribute names") }),
 	@variable(name = "census_files", type = IType.LIST, of = IType.STRING, doc = {@doc("Returns the list of census files") }), 
-	@variable(name = "generation_algo", type = IType.STRING, doc = {@doc("Returns the name of the generation algorithm") }),
-	@variable(name = "mappers", type = IType.MAP, doc = {@doc("Returns the list of mapper") }),
-	
 	@variable(name = "spatial_mapper_file", type = IType.LIST, of = IType.STRING, doc = {@doc("Returns the list of spatial files used to map the entities to areas") }),
 	@variable(name = "spatial_matcher_file", type = IType.STRING, doc = {@doc("Returns the spatial file used to match entities and areas") }),
 	// New var to include
+	@variable(name = GamaPopGenerator.GENERATION_ALGO, 
+		type = IType.STRING, 
+		doc = {@doc("Returns the name of the generation algorithm") }),
 	@variable(name = GamaPopGenerator.NESTS, 
 		type = IType.STRING, 
 		doc = {@doc("Returns the spatial file used to localize entities") }),
@@ -74,10 +74,7 @@ import spll.popmapper.distribution.SpatialDistributionFactory;
 		doc = {@doc("Enable the use of IPF to extrapolate a joint distribution upon marginals and seed sample")}),
 	@variable(name = GamaPopGenerator.D_FEATURE, 
 		type=IType.STRING, 
-		doc = {@doc("The spatial feature to based spatial distribution of nest uppon")}),
-	@variable(name = GamaPopGenerator.C_FEATURE, 
-		type=IType.STRING, 
-		doc = {@doc("The spatial feature to setup capacity/density constraint to filter acceptable nests")}),
+		doc = {@doc("The spatial feature to based spatial distribution of nest uppon")})
 
 })
 public class GamaPopGenerator implements IValue {
@@ -106,17 +103,15 @@ public class GamaPopGenerator implements IValue {
 	//////////////////////////////////////////////
 	boolean spatializePopulation;	
 	
-	String stringOfCensusIdInCSVfile;
-	String stringOfCensusIdInShapefile;
+	Double minDistanceLocalize;
+	Double maxDistanceLocalize;
+	boolean localizeOverlaps;
 	
+	public final static String MATCH = "matcher_file";
 	String pathCensusGeometries;
 	
 	public final static String NESTS = "Nests_geometries";
 	String pathNestGeometries;
-
-	Double minDistanceLocalize;
-	Double maxDistanceLocalize;
-	boolean localizeOverlaps;
 	
 	// Spatial distribution
 	public final static String SPATIALDISTRIBUTION = "spatial_distribution";
@@ -124,14 +119,13 @@ public class GamaPopGenerator implements IValue {
 	
 	public final static String D_FEATURE = "distribution_feature";
 	private String distributionFeature = "";
-	
-	public final static String C_FEATURE = "constraint_feature";
-	private String constraintFeature = "";
 
 	public final static String CONSTRAINTS = "spatial_constraints";
 	private GenStarGamaConstraintBuilder cBuilder;
 	
 	String crs;
+	
+	private int priorityCounter;
 
 	List<String> pathAncilaryGeofiles;
 
@@ -208,11 +202,25 @@ public class GamaPopGenerator implements IValue {
 		return atts;
 	}
 	
+	/**
+	 * TODO : to be verified if useful, if still right
+	 * @return
+	 */
+	public Collection<RecordAttribute<Attribute<? extends core.metamodel.value.IValue>, 
+				Attribute<? extends core.metamodel.value.IValue>>> getRecordAttributes() {
+		return inputAttributes.getRecords();
+		
+	}
+	
 	@getter(DEMOGRAPHIC_FILES)
 	public List<GSSurveyWrapper> getInputFiles() {
 		return inputFiles;
 	}
 	
+	/**
+	 * TODO : what it is for ...
+	 * @return
+	 */
 	public IList<String> getCensusFile(){
 		IList<String> f = GamaListFactory.create(Types.STRING);
 		for (GSSurveyWrapper a : this.getInputFiles()) f.add(a.getRelativePath().toString());
@@ -235,37 +243,47 @@ public class GamaPopGenerator implements IValue {
 	}
 
 	// ACCESSOR FOR SP LOCALIZATION
-	
-	public String getStringOfCensusIdInCSVfile() {
-		return stringOfCensusIdInCSVfile;
-	}
 
-	public void setStringOfCensusIdInCSVfile(String stringOfCensusIdInCSVfile) {
-		this.stringOfCensusIdInCSVfile = stringOfCensusIdInCSVfile;
-	}
-
-	public String getStringOfCensusIdInShapefile() {
-		return stringOfCensusIdInShapefile;
-	}
-
-	public void setStringOfCensusIdInShapefile(String stringOfCensusIdInShapefile) {
-		this.stringOfCensusIdInShapefile = stringOfCensusIdInShapefile;
-	}
-
+	/**
+	 * is this generator does also localize population
+	 * @return
+	 */
 	public boolean isSpatializePopulation() {
 		return spatializePopulation;
 	}
 
+	/**
+	 * Define this generator to also localize population
+	 * @return
+	 */
 	public void setSpatializePopulation(boolean spatializePopulation) {
 		this.spatializePopulation = spatializePopulation;
 	}
 
+	/**
+	 * The main CRS of the localization process
+	 * @return
+	 */
 	public String getCrs() {
 		return crs;
 	}
 
+	/**
+	 * Set the CRS of the localization process
+	 * @param crs
+	 */
 	public void setCrs(String crs) {
 		this.crs = crs;
+	}
+	
+	/**
+	 * When priority of constraint are not specified there are prioriterized according to definition order
+	 * @return
+	 */
+	public int uptadePriorityCounter() {
+		int tmp = priorityCounter;
+		priorityCounter++;
+		return tmp;
 	}
 	
 	@getter(NESTS)
@@ -278,27 +296,19 @@ public class GamaPopGenerator implements IValue {
 		this.pathNestGeometries = path;
 	}
 
-	public Collection<RecordAttribute<Attribute<? extends core.metamodel.value.IValue>, 
-				Attribute<? extends core.metamodel.value.IValue>>> getRecordAttributes() {
-		return inputAttributes.getRecords();
-		
-	}
-
-	public void setSpatialMapper(String stringOfCensusIdInCSVfile, String stringOfCensusIdInShapefile) {
-		this.stringOfCensusIdInCSVfile = stringOfCensusIdInCSVfile;
-		this.stringOfCensusIdInShapefile = stringOfCensusIdInShapefile;
-	}
-
+	@setter(MATCH)
 	public void setPathCensusGeometries(String stringPathToCensusShapefile) {
 		this.pathCensusGeometries = stringPathToCensusShapefile;
 		
 		setSpatializePopulation(pathCensusGeometries != null);
 	}
 
+	@getter(MATCH)
 	public String getPathCensusGeometries() {
 		return pathCensusGeometries;
 	}
 
+	// TODO : get ride of next methods before spatial distribution
 
 	public void setLocalizedAround(Double min, Double max, boolean overlaps) {
 		setMinDistanceLocalize(min);
@@ -358,23 +368,23 @@ public class GamaPopGenerator implements IValue {
 		switch(getSpatialDistribution().getConcept()) {
 			case NUMBER :  
 				SpatialConstraintMaxNumber scmn = null;
-				if (constraintFeature != null && !Strings.isEmpty(constraintFeature)) {
+				if (distributionFeature != null && !Strings.isEmpty(distributionFeature)) {
 					List<SpllFeature> sf = sfGeometries.getGeoEntity().stream().filter(f -> f.getAttributes()
-							.stream().noneMatch(af -> af.getAttributeName().equalsIgnoreCase(constraintFeature)))
+							.stream().noneMatch(af -> af.getAttributeName().equalsIgnoreCase(distributionFeature)))
 							.collect(Collectors.toList());
 					if(!sf.isEmpty()) {
 						throw GamaRuntimeException.error("The specified capacity constraint feature "
-							+constraintFeature+" is not present in "+Arrays.asList(sf).toString(), scope);
+							+distributionFeature+" is not present in "+Arrays.asList(sf).toString(), scope);
 					}
 				} else {
 					throw GamaRuntimeException.error("You must specified a spatial feature (attribute) to based distribution upon", scope);
 				}
 				switch(getSpatialDistribution()) {
 					case CAPACITY :
-						scmn = new SpatialConstraintMaxNumber(sfGeometries.getGeoEntity(), constraintFeature);
+						scmn = new SpatialConstraintMaxNumber(sfGeometries.getGeoEntity(), distributionFeature);
 						break;
 					case DENSITY :
-						scmn = new SpatialConstraintMaxDensity(sfGeometries.getGeoEntity(), constraintFeature);
+						scmn = new SpatialConstraintMaxDensity(sfGeometries.getGeoEntity(), distributionFeature);
 						break;
 					default: break;
 				}
@@ -392,7 +402,6 @@ public class GamaPopGenerator implements IValue {
 				}
 		}
 	}
-	
 	
 	// ------------------
 	// Spatial constraint

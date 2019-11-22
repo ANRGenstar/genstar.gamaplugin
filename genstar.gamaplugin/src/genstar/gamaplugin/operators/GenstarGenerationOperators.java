@@ -26,6 +26,7 @@ import core.metamodel.io.IGSGeofile;
 import core.metamodel.value.IValue;
 import core.util.excpetion.GSIllegalRangedData;
 import genstar.gamaplugin.types.GamaPopGenerator;
+import genstar.gamaplugin.utils.GenStarGamaConstraintBuilder;
 import genstar.gamaplugin.utils.GenStarGamaUtils;
 import gospl.GosplEntity;
 import gospl.GosplPopulation;
@@ -71,9 +72,9 @@ import spll.io.SPLGeofileBuilder;
 import spll.io.SPLRasterFile;
 import spll.io.SPLVectorFile;
 import spll.io.exception.InvalidGeoFormatException;
-import spll.popmapper.SPLocalizer;
-import spll.popmapper.constraint.ISpatialConstraint;
-import spll.popmapper.normalizer.SPLUniformNormalizer;
+import spll.localizer.SPLocalizer;
+import spll.localizer.constraint.ISpatialConstraint;
+import spll.datamapper.normalizer.SPLUniformNormalizer;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class GenstarGenerationOperators {
@@ -437,10 +438,12 @@ public class GenstarGenerationOperators {
 			localizer = new SPLocalizer(population, sfGeoms);	
 			localizer.setDistribution(gen.getSpatialDistribution(sfGeoms, scope));
 			/*
-			 * When nests are defined, census became 
+			 * When nests are defined, census became the matcher
 			 */
 			if (sfCensus != null) {
-				localizer.setMatcher(sfCensus, gen.getStringOfCensusIdInCSVfile(), gen.getStringOfCensusIdInShapefile());				
+				GenStarGamaConstraintBuilder builder = gen.getConstraintBuilder();
+				localizer.setMatcher(sfCensus, builder.getLocalizationAttribute(), builder.getLocalizationFeature(),
+						builder.getLocalizationLimit(), builder.getLocalizationStep(), builder.getLocalizationPriority());				
 			}
 		} else {
 			localizer = new SPLocalizer(population, sfCensus);

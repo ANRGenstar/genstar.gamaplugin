@@ -45,7 +45,7 @@ global {
 		// -------------------------
 		pop_gen <- pop_gen localize_on_geometries(roads_shp.path);
 		pop_gen <- pop_gen localize_around_at(2.0, 10.0, false);
-		pop_gen <- pop_gen add_spatial_distribution("area");
+		pop_gen <- pop_gen add_area_distribution "area";
 
 		// -------------------------			
 		create people from: pop_gen number: 10000 ;

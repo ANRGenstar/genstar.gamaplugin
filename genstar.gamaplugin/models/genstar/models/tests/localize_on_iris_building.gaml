@@ -79,7 +79,7 @@ global {
 		
 		pop_gen <- pop_gen localize_on_census(iris_shp.path);
 		
-		pop_gen <- pop_gen add_spatial_match(stringOfCensusIdInCSVfile,stringOfCensusIdInShapefile);
+		pop_gen <- pop_gen add_spatial_match(stringOfCensusIdInCSVfile,stringOfCensusIdInShapefile,1#km,200#m,1);
 
 		// -------------------------			
 		create people from: pop_gen;

@@ -27,16 +27,27 @@ public class GenstarLocalizeOperators {
 	@doc(value = "Define an explicit spatial match between synthetic entities and spatial entities (e.g. census area)",
 		examples = @example(value = "add_spatial_mapper(my_pop_generator, "
 				+ "\"census attribute in synthetic entities\", "
-				+ "\"census id in shapefile\"", test = false))
+				+ "\"census id in shapefile\", 1#km, 50#m, 0", test = false))
 	@no_test
 	public static GamaPopGenerator addSpatialMatch(IScope scope, GamaPopGenerator gen, 
-			String stringOfCensusIdInCSVfile, String stringOfCensusIdInShapefile) {
+			String stringOfCensusIdInCSVfile, String stringOfCensusIdInShapefile, double limit, double step, int priority) {
 		if(gen.getPathCensusGeometries() == null ) {
 			throw GamaRuntimeException.error("Cannot set a spatial Matcher when the Census Shapefile has not been set.", scope);
 		}
-		gen.setSpatialMapper(stringOfCensusIdInCSVfile, stringOfCensusIdInShapefile);		
+		gen.getConstraintBuilder().addLocalizationConstraint(stringOfCensusIdInShapefile, stringOfCensusIdInCSVfile, limit, step, priority);		
 		
 		return gen;
+	}	
+	
+	@operator(value = "add_spatial_match", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
+	@doc(value = "Define an explicit spatial match between synthetic entities and spatial entities (e.g. census area)",
+		examples = @example(value = "add_spatial_mapper(my_pop_generator, "
+				+ "\"census attribute in synthetic entities\", "
+				+ "\"census id in shapefile\"", test = false))
+	@no_test
+	public static GamaPopGenerator addSpatialMatch(IScope scope, GamaPopGenerator gen, 
+			String stringOfCensusIdInCSVfile, String stringOfCensusIdInShapefile) {		
+		return GenstarLocalizeOperators.addSpatialMatch(scope, gen, stringOfCensusIdInCSVfile, stringOfCensusIdInShapefile,0,0,gen.uptadePriorityCounter());
 	}	
 	
 	// --------------------------------------------------------------------------------
@@ -69,6 +80,14 @@ public class GenstarLocalizeOperators {
 	}
 	
 	@operator(value = "add_capacity_constraint", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
+	@doc(value = "Define a spatial constraint (threshold) to filter acceptable nest",
+		examples = @example(value = "my_pop_generator add_capacity_constraint 5", test = false))
+	@no_test
+	public static GamaPopGenerator addCapacityConstraint(IScope scope, GamaPopGenerator gen, int capacity) {
+		return addCapacityConstraint(scope, gen, capacity, capacity, 0, gen.uptadePriorityCounter());
+	}
+	
+	@operator(value = "add_capacity_constraint", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
 	@doc(value = "Define a spatial constraint (threshold) to filter acceptable nest based on attribute of the nest",
 		examples = @example(value = "my_pop_generator add_capacity_constraint (\"capacity\",100,2,2)", test = false))
 	@no_test
@@ -76,6 +95,14 @@ public class GenstarLocalizeOperators {
 		GenStarGamaConstraintBuilder builder = gen.getConstraintBuilder();
 		builder.addCapacityConstraint(feature, -1, max, step, priority);
 		return gen;
+	}
+	
+	@operator(value = "add_capacity_constraint", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
+	@doc(value = "Define a spatial constraint (threshold) to filter acceptable nest based on attribute of the nest",
+		examples = @example(value = "my_pop_generator add_capacity_constraint (\"capacity\",100,2,2)", test = false))
+	@no_test
+	public static GamaPopGenerator addCapacityConstraint(IScope scope, GamaPopGenerator gen, String feature) {
+		return addCapacityConstraint(scope, gen, feature, 0, 0, gen.uptadePriorityCounter());
 	}
 	
 	@operator(value = "add_density_constraint", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
@@ -89,6 +116,14 @@ public class GenstarLocalizeOperators {
 	}
 	
 	@operator(value = "add_density_constraint", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
+	@doc(value = "Define a spatial constraint density to filter acceptable nest",
+		examples = @example(value = "my_pop_generator add_capacity_constraint 0.2", test = false))
+	@no_test
+	public static GamaPopGenerator addDensityConstraint(IScope scope, GamaPopGenerator gen, double density) {
+		return addDensityConstraint(scope, gen, density, density, 0d, gen.uptadePriorityCounter());
+	}
+	
+	@operator(value = "add_density_constraint", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
 	@doc(value = "Define a spatial constraint density to filter acceptable nest based on one of their attributes",
 		examples = @example(value = "my_pop_generator add_capacity_constraint (0.2,0.4,0.05,10)", test = false))
 	@no_test
@@ -96,6 +131,14 @@ public class GenstarLocalizeOperators {
 		GenStarGamaConstraintBuilder builder = gen.getConstraintBuilder();
 		builder.addDensityConstraint(feature, -1d, max, step, priority);
 		return gen;
+	}
+	
+	@operator(value = "add_density_constraint", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
+	@doc(value = "Define a spatial constraint density to filter acceptable nest based on one of their attributes",
+		examples = @example(value = "my_pop_generator add_capacity_constraint (0.2,0.4,0.05,10)", test = false))
+	@no_test
+	public static GamaPopGenerator addDensityConstraint(IScope scope, GamaPopGenerator gen, String feature) {
+		return addDensityConstraint(scope, gen, feature, 0d, 0d, gen.uptadePriorityCounter());
 	}
 	
 	// -----------------------------------------------------------

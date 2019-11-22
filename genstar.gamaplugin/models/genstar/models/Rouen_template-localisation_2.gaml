@@ -114,7 +114,7 @@ global {
 		// Spatialization 
 		// -------------------------
 		pop_gen <- pop_gen localize_on_census(iris_shp.path);
-		pop_gen <- pop_gen add_spatial_mapper(stringOfCensusIdInCSVfile,stringOfCensusIdInShapefile);
+		pop_gen <- pop_gen add_spatial_match(stringOfCensusIdInCSVfile,stringOfCensusIdInShapefile);
 
 		// -------------------------			
 		create people from: pop_gen ;

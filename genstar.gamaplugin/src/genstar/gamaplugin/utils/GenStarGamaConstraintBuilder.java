@@ -8,10 +8,10 @@ import java.util.stream.Collectors;
 import core.metamodel.entity.AGeoEntity;
 import core.metamodel.value.IValue;
 import genstar.gamaplugin.utils.GenStarConstant.SpatialConstraint;
-import spll.popmapper.constraint.ISpatialConstraint;
-import spll.popmapper.constraint.SpatialConstraintMaxDensity;
-import spll.popmapper.constraint.SpatialConstraintMaxDistance;
-import spll.popmapper.constraint.SpatialConstraintMaxNumber;
+import spll.localizer.constraint.ISpatialConstraint;
+import spll.localizer.constraint.SpatialConstraintMaxDensity;
+import spll.localizer.constraint.SpatialConstraintMaxDistance;
+import spll.localizer.constraint.SpatialConstraintMaxNumber;
 
 /**
  * Helper in order to build constraint for localization process using a proxy (i.e. store all variable until actual creation)
@@ -22,6 +22,14 @@ import spll.popmapper.constraint.SpatialConstraintMaxNumber;
 public class GenStarGamaConstraintBuilder {
 
 	private Collection<SpatialConstraint> constraints; 
+	
+	boolean localizer = false;
+	static final double LOCALISAZATION_DEFAULT_STEP = 10d;
+	String localizationFeature;
+	String localizationAttribute;
+	double localizationLimit;
+	double localizationStep;
+	int localizationPriority;
 	
 	static final double DENSITY_DEFAULT_STEP =  0.1;
 	String densityFeature;
@@ -214,5 +222,59 @@ public class GenStarGamaConstraintBuilder {
 		sc.setPriority(distancePriority);
 		return sc;
 	}
+	
+	/**
+	 * Add setup for localization constraint, also referred as '<it>matcher</it>' !
+	 * 
+	 * @param feature
+	 * @param attribute
+	 * @param limit
+	 * @param step
+	 * @param priority
+	 */
+	public void addLocalizationConstraint(String feature, String attribute, double limit, double step, int priority) {
+		localizer = true;
+		this.localizationFeature = feature;
+		this.localizationAttribute = attribute;
+		this.localizationLimit = limit;
+		this.localizationStep = step;
+		this.localizationPriority = priority;
+	}
+	
+	/**
+	 * if the localizer has been setup return true, return false otherwise
+	 * @return
+	 */
+	public boolean hasLocalizerReleaseOption() { return localizer;}
+	
+	/**
+	 * The name of the localization feature in GIS files/geometries
+	 * @return
+	 */
+	public String getLocalizationFeature() {return localizationFeature;}
+	
+	/**
+	 * The name of the entity attribute in synthetic population
+	 * @return
+	 */
+	public String getLocalizationAttribute() {return localizationAttribute;}
+	
+	/**
+	 * The limit to extends geometry of localization constraint
+	 * @return
+	 */
+	public double getLocalizationLimit() {return localizationLimit;}
+	
+	/**
+	 * The step to increase the size of the geometry of localization constraint
+	 * @return
+	 */
+	public double getLocalizationStep() {return localizationStep;}
+	
+	/**
+	 * The priority of the localization constraint
+	 * @return
+	 */
+	public int getLocalizationPriority() {return localizationPriority;}
 		
 }

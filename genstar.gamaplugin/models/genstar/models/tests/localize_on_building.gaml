@@ -44,7 +44,7 @@ global {
 		// Spatialization 
 		// -------------------------
 		pop_gen <- pop_gen localize_on_geometries(buildings_shp.path);
-		pop_gen <- pop_gen add_capacity_distribution(1);
+		pop_gen <- pop_gen add_capacity_constraint 30;
 
 		// -------------------------			
 		create people from: pop_gen number: 10000 ;
