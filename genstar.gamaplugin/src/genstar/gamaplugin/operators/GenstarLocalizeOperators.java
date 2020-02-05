@@ -220,8 +220,8 @@ public class GenstarLocalizeOperators {
 	}	
 	
 	@operator(value = "localize_on_geometries", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-	@doc(value = "add an attribute defined by its name (string), its datatype (type), its list of values (list) to a population_generator",
-			examples = @example(value = "add_attribute(pop_gen, \"Sex\", string,[\"Man\", \"Woman\"])", test = false))
+	@doc(value = "Makes it possible to setup a localization to a specific spatial object, i.e. the nest",
+			examples = @example(value = "pop_gen localize_on_geometries \\\"nest_file_path\\\"", test = false))
 	@no_test
 	public static GamaPopGenerator localizeOnGeometries(IScope scope, GamaPopGenerator gen, String stringPathToGeometriesShapefile) {
 		gen.setSpatializePopulation(true);
@@ -230,8 +230,8 @@ public class GenstarLocalizeOperators {
 	}
 
 	@operator(value = "localize_on_census", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
-	@doc(value = "add an attribute defined by its name (string), its datatype (type), its list of values (list) to a population_generator",
-			examples = @example(value = "add_attribute(pop_gen, \"Sex\", string,[\"Man\", \"Woman\"])", test = false))
+	@doc(value = "Makes it possible to setup a localization to a specific spatial object that should be related to an ID attribute of synthetic entities",
+			examples = @example(value = "pop_gen localize_on_census \"census_file_path\"", test = false))
 	@no_test
 	public static GamaPopGenerator localizeOnCensus(IScope scope, GamaPopGenerator gen, String stringPathToCensusShapefile) {
 		gen.setSpatializePopulation(true);

@@ -445,19 +445,20 @@ public class GenstarGenerationOperators {
 				localizer.setMatcher(sfCensus, builder.getLocalizationAttribute(), builder.getLocalizationFeature(),
 						builder.getLocalizationLimit(), builder.getLocalizationStep(), builder.getLocalizationPriority());				
 			}
+			
+			try {
+				for(ISpatialConstraint cs : gen.getConstraints(sfGeoms, scope)) { localizer.addConstraint(cs); }
+			} catch (IllegalStateException e) {
+				if (gen.getConstraintBuilder().hasConstraints()) {
+					throw GamaRuntimeException.error("Builder "+gen.getConstraintBuilder()+" have not been able to create constraints", scope);
+				}
+			}
+
 		} else {
 			localizer = new SPLocalizer(population, sfCensus);
 			localizer.setDistribution(gen.getSpatialDistribution(sfCensus, scope));			
 		}		
 		
-		try {
-			for(ISpatialConstraint cs : gen.getConstraints(sfGeoms, scope)) { localizer.addConstraint(cs); }
-		} catch (IllegalStateException e) {
-			if (gen.getConstraintBuilder().hasConstraints()) {
-				throw GamaRuntimeException.error("Builder "+gen.getConstraintBuilder()+" have not been able to create constraints", scope);
-			}
-		}
-
 		// ----------
 		// SETUP GEOGRAPHICAL MAPPER a.k.a. geographical regression (or statistical / machine learning)
 		//  ---------
