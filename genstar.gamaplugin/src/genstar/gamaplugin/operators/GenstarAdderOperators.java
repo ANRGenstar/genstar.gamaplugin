@@ -2,6 +2,7 @@ package genstar.gamaplugin.operators;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.stream.Collectors;
 
 import core.metamodel.attribute.Attribute;
 import core.metamodel.attribute.AttributeFactory;
@@ -139,9 +140,7 @@ public class GenstarAdderOperators {
 			examples = @example(value = "add_attribute(pop_gen, \"iris\", string,liste_iris, \"unique\", \"P13_POP\")", test = false))
 	@no_test
 	public static GamaPopGenerator addAttribute(IScope scope, GamaPopGenerator gen, String name, IType dataType, IList value, Boolean ordered) {
-		if (gen == null) {
-			gen = new GamaPopGenerator();
-		}
+		if (gen == null) { gen = new GamaPopGenerator(); }
 		
 		try {
 			Attribute<? extends IValue> newAttribute = 
@@ -166,6 +165,18 @@ public class GenstarAdderOperators {
 		} catch (GSIllegalRangedData e) {
 			throw GamaRuntimeException.error("Wrong type in the record." + e.getMessage(), scope);
 		}
+		return gen;
+	}
+	
+	@operator(value = "add_marginals", category = { "Gen*" }, concept = { "Gen*" })
+	@doc(value = "add a list of marginals (name of the attributes) to fit the population with, in any CO based algorithm",
+			examples = @example(value = "add_marginals(pop_gen, [\"gender\",\"age\"]"))
+	@no_test
+	public static GamaPopGenerator addMarginals(IScope scope, GamaPopGenerator gen, IList names) {
+		if (gen == null) { throw GamaRuntimeException.create(new IllegalArgumentException("Cannot set marginals with a null generator"), scope);}
+		gen.setMarginals(gen.getInputAttributes().getAttributes().stream()
+				.filter(att -> names.contains(att.getAttributeName()))
+				.collect(Collectors.toList()));
 		return gen;
 	}
 }

@@ -10,6 +10,7 @@ import msi.gama.precompiler.GamlAnnotations.no_test;
 import msi.gama.precompiler.GamlAnnotations.operator;
 import msi.gama.runtime.IScope;
 import msi.gama.runtime.exceptions.GamaRuntimeException;
+import msi.gama.util.IList;
 
 /**
  * Define all localization operators available
@@ -236,6 +237,16 @@ public class GenstarLocalizeOperators {
 	public static GamaPopGenerator localizeOnCensus(IScope scope, GamaPopGenerator gen, String stringPathToCensusShapefile) {
 		gen.setSpatializePopulation(true);
 		gen.setPathCensusGeometries(stringPathToCensusShapefile);
+		return gen;
+	}
+	
+	@operator(value = "localize_on_agents", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
+	@doc(value = "Makes it possible to setup a localization to target geometries associated with a set of agent",
+			examples = @example(value = "pop_gen localize_on_census \"census_file_path\"", test = false))
+	@no_test
+	public static GamaPopGenerator localizeOnAgents(IScope scope, GamaPopGenerator gen, IList listOfAgents) {
+		gen.setSpatializePopulation(true);
+		gen.setAgentsGeometries(listOfAgents);
 		return gen;
 	}
 }

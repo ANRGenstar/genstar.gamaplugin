@@ -14,6 +14,7 @@ package genstar.gamaplugin.types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,6 @@ import core.configuration.dictionary.AttributeDictionary;
 import core.metamodel.IPopulation;
 import core.metamodel.attribute.Attribute;
 import core.metamodel.attribute.AttributeFactory;
-import core.metamodel.attribute.record.RecordAttribute;
 import core.metamodel.entity.ADemoEntity;
 import core.metamodel.io.GSSurveyWrapper;
 import genstar.gamaplugin.utils.GenStarConstant.GenerationAlgorithm;
@@ -86,17 +86,25 @@ public class GamaPopGenerator implements IValue {
 	//////////////////////////////////////////////
 	
 	public final static String GENERATION_ALGO = "GOSP_algorithm";
-	String generationAlgorithm;
+	private String generationAlgorithm;
 	
 	public final static String DEMOGRAPHIC_FILES = "demographic_files";
-	List<GSSurveyWrapper> inputFiles;
+	private List<GSSurveyWrapper> inputFiles;
 	
 	public final static String ATTRIBUTES_DICTIONARY = "demographic_dictionary";
 	public final static String ATTRIBUTES = "demographic_attributes";
-	AttributeDictionary inputAttributes;
+	public final static String MARGINALS = "demogrphic_marginals";
+	
+	private AttributeDictionary inputAttributes;
+	private List<Attribute<? extends core.metamodel.value.IValue>> marginals;
 	
 	public final static String IPF = "ipf";
 	public boolean ipf;
+	
+	// CO related variables
+	public int max_iteration = 1000;
+	public double neighborhood_extends = 0.05d;
+	public double fitness_threshold = 0.05d;
 	
 	//////////////////////////////////////////////
 	// Attirbute for the Spll localization
@@ -113,6 +121,9 @@ public class GamaPopGenerator implements IValue {
 	public final static String NESTS = "Nests_geometries";
 	String pathNestGeometries;
 	
+	public final static String AGENT_NESTS = "Nests_agents";
+	IList<? extends IAgent> listOfNestAgents;
+	
 	// Spatial distribution
 	public final static String SPATIALDISTRIBUTION = "spatial_distribution";
 	private SpatialDistribution spatialDistribution;
@@ -121,6 +132,7 @@ public class GamaPopGenerator implements IValue {
 	private String distributionFeature = "";
 
 	public final static String CONSTRAINTS = "spatial_constraints";
+
 	private GenStarGamaConstraintBuilder cBuilder;
 	
 	String crs;
@@ -202,14 +214,32 @@ public class GamaPopGenerator implements IValue {
 		return atts;
 	}
 	
+	@getter(MARGINALS)
+	public IList<String> getMarginalsName(){
+		IList<String> atts = GamaListFactory.create(Types.STRING);
+		for (Attribute<? extends core.metamodel.value.IValue> a : this.getMarginals())
+			atts.add(a.getAttributeName());
+		return atts;
+	}
+	
 	/**
-	 * TODO : to be verified if useful, if still right
+	 * Set marginals to fit population with
+	 * @param marginals
+	 */
+	public void setMarginals(List<Attribute<? extends core.metamodel.value.IValue>> marginals) {
+		if(marginals==null || marginals.isEmpty()) {
+			this.marginals = new ArrayList<>(this.getInputAttributes().getAttributes());
+		} else {
+			this.marginals = marginals;
+		}
+	}
+	
+	/**
+	 * Retrieve the marginals for the current generator: i.e. the attribute that define the goal total distribution
 	 * @return
 	 */
-	public Collection<RecordAttribute<Attribute<? extends core.metamodel.value.IValue>, 
-				Attribute<? extends core.metamodel.value.IValue>>> getRecordAttributes() {
-		return inputAttributes.getRecords();
-		
+	public List<Attribute<? extends core.metamodel.value.IValue>> getMarginals() {
+		return Collections.unmodifiableList(this.marginals);
 	}
 	
 	@getter(DEMOGRAPHIC_FILES)
@@ -217,19 +247,13 @@ public class GamaPopGenerator implements IValue {
 		return inputFiles;
 	}
 	
-	/**
-	 * TODO : what it is for ...
-	 * @return
-	 */
-	public IList<String> getCensusFile(){
-		IList<String> f = GamaListFactory.create(Types.STRING);
-		for (GSSurveyWrapper a : this.getInputFiles()) f.add(a.getRelativePath().toString());
-		return f;
-	}
-	
 	@getter(GENERATION_ALGO)
 	public String getGenerationAlgorithm() { return generationAlgorithm; }
 	
+	/**
+	 * Get the constant enumerate algorithm for Gen*
+	 * @return
+	 */
 	public GenerationAlgorithm getGenstarGenerationAlgorithm() {return GenerationAlgorithm.getAlgorithm(this.generationAlgorithm); }
 	
 	@getter(IPF)
@@ -294,6 +318,17 @@ public class GamaPopGenerator implements IValue {
 	@setter(NESTS)
 	public void setPathNestGeometries(String path) {
 		this.pathNestGeometries = path;
+	}
+	
+
+	@getter(AGENT_NESTS)
+	public void setAgentsGeometries(IList<? extends IAgent> listOfAgents) {
+		this.listOfNestAgents = listOfAgents;
+	}
+	
+	@setter(AGENT_NESTS)
+	public IList<? extends IAgent> getAgentsGeometries() {
+		return this.listOfNestAgents;
 	}
 
 	@setter(MATCH)
@@ -483,5 +518,6 @@ public class GamaPopGenerator implements IValue {
 	public Collection<IAgent> getAgents() {
 		return mapEntitiesAgent.values();
 	}
+
 
 }

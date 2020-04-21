@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.genstar</groupId>
     <artifactId>genstar.gamaplugin.parent</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.4-SNAPSHOT</version>
   	<relativePath>../genstar.gamaplugin.parent/</relativePath>
   </parent>
 </project>

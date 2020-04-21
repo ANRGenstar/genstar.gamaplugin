@@ -78,7 +78,8 @@ public class GenStarConstant {
 	public enum GenerationAlgorithm implements IGSAlias {
 		DIRECTSAMPLING (Arrays.asList("Direct Sampling","DS","IS")), 
 		HIERARCHICALSAMPLING (Arrays.asList("Hierarchical Sampling","HS")), 
-		UNIFORMSAMPLING (Arrays.asList("Uniform Sampling","US","simple_draw"));
+		UNIFORMSAMPLING (Arrays.asList("Uniform Sampling","US","simple_draw")),
+		MULTILAYER (Arrays.asList("Multi Type", "Multi Layer", "Household", "ML"));
 		
 		List<String> alias;
 		
@@ -91,6 +92,7 @@ public class GenStarConstant {
 			if(DIRECTSAMPLING.getMatch(algorithm)) {return DIRECTSAMPLING;}
 			else if(HIERARCHICALSAMPLING.getMatch(algorithm)) {return HIERARCHICALSAMPLING;}
 			else if(UNIFORMSAMPLING.getMatch(algorithm)) {return UNIFORMSAMPLING;}
+			else if(MULTILAYER.getMatch(algorithm)) {return MULTILAYER;}
 			else throw new IllegalArgumentException(algorithm+": No such generation algorithm supported");
 		}
 	}

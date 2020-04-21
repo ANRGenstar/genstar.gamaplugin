@@ -12,6 +12,7 @@ global {
 	file f_AS <- file("../data/Age & Sexe-Tableau 1.csv");
 	file f_ASCSP <- file("../data/Age & Sexe & CSP-Tableau 1.csv");
 	file f_IRIS <- file("../data/Rouen_iris.csv");
+	file f_BC <- shape_file("../data/shp/buildings_capacity.shp");
 
 	// String constants
 	file iris_shp <- file("../data/shp/Rouen_iris_number.shp");

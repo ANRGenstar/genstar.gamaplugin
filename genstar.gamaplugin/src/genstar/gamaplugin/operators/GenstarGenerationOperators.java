@@ -7,9 +7,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -25,29 +27,42 @@ import core.metamodel.entity.AGeoEntity;
 import core.metamodel.io.IGSGeofile;
 import core.metamodel.value.IValue;
 import core.util.excpetion.GSIllegalRangedData;
+import core.util.random.GenstarRandom;
 import genstar.gamaplugin.types.GamaPopGenerator;
 import genstar.gamaplugin.utils.GenStarGamaConstraintBuilder;
 import genstar.gamaplugin.utils.GenStarGamaUtils;
-import gospl.GosplEntity;
+import gospl.GosplMultitypePopulation;
 import gospl.GosplPopulation;
 import gospl.algo.IGosplConcept.EGosplAlgorithm;
+import gospl.algo.co.MultiLayerSampleBasedAlgorithm;
+import gospl.algo.co.hillclimbing.MultiHillClimbing;
+import gospl.algo.co.metamodel.AMultiLayerOptimizationAlgorithm;
+import gospl.algo.co.metamodel.neighbor.MultiPopulationNeighborSearch;
+import gospl.algo.co.metamodel.neighbor.PopulationVectorNeighborSearch;
 import gospl.algo.ipf.SRIPFAlgo;
 import gospl.algo.sr.ISyntheticReconstructionAlgo;
 import gospl.algo.sr.ds.DirectSamplingAlgo;
 import gospl.algo.sr.hs.HierarchicalHypothesisAlgo;
 import gospl.distribution.GosplContingencyTable;
 import gospl.distribution.GosplInputDataManager;
+import gospl.distribution.GosplNDimensionalMatrixFactory;
 import gospl.distribution.exception.IllegalControlTotalException;
 import gospl.distribution.exception.IllegalDistributionCreation;
+import gospl.distribution.matrix.AFullNDimensionalMatrix;
 import gospl.distribution.matrix.INDimensionalMatrix;
 import gospl.distribution.matrix.coordinate.ACoordinate;
 import gospl.generator.DistributionBasedGenerator;
+import gospl.generator.SampleBasedGenerator;
 import gospl.io.exception.InvalidSurveyFormatException;
 import gospl.sampler.IDistributionSampler;
 import gospl.sampler.IHierarchicalSampler;
 import gospl.sampler.ISampler;
+import gospl.sampler.co.MicroDataSampler;
+import gospl.sampler.multilayer.co.GosplBiLayerOptimizationSampler;
 import gospl.sampler.sr.GosplBasicSampler;
 import gospl.sampler.sr.GosplHierarchicalSampler;
+import msi.gama.common.interfaces.IKeyword;
+import msi.gama.metamodel.agent.IAgent;
 import msi.gama.metamodel.shape.GamaShape;
 import msi.gama.metamodel.shape.IShape;
 import msi.gama.precompiler.GamlAnnotations.doc;
@@ -59,6 +74,8 @@ import msi.gama.runtime.exceptions.GamaRuntimeException;
 import msi.gama.util.GamaListFactory;
 import msi.gama.util.GamaMapFactory;
 import msi.gama.util.IList;
+import msi.gaml.descriptions.SpeciesDescription;
+import msi.gaml.expressions.IExpression;
 import msi.gaml.operators.Spatial;
 import msi.gaml.types.Types;
 import spin.SpinPopulation;
@@ -68,13 +85,13 @@ import spll.SpllPopulation;
 import spll.algo.LMRegressionOLS;
 import spll.algo.exception.IllegalRegressionException;
 import spll.datamapper.exception.GSMapperException;
+import spll.datamapper.normalizer.SPLUniformNormalizer;
 import spll.io.SPLGeofileBuilder;
 import spll.io.SPLRasterFile;
 import spll.io.SPLVectorFile;
 import spll.io.exception.InvalidGeoFormatException;
 import spll.localizer.SPLocalizer;
 import spll.localizer.constraint.ISpatialConstraint;
-import spll.datamapper.normalizer.SPLUniformNormalizer;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class GenstarGenerationOperators {
@@ -105,6 +122,9 @@ public class GenstarGenerationOperators {
 			return null;
 		}
 
+		// Set genstar random engine to be the one of Gama !
+		GenstarRandom.setInstance(scope.getRandom().getGenerator());
+		// Degault base directory
 		Path baseDirectory = FileSystems.getDefault().getPath(".");		
 		
 		GenstarConfigurationFile confFile = new GenstarConfigurationFile();
@@ -119,11 +139,12 @@ public class GenstarGenerationOperators {
 		GosplInputDataManager gdb = new GosplInputDataManager(confFile);
 		
 		IPopulation<ADemoEntity, Attribute<? extends IValue>> population = new GosplPopulation();
-		
+			
 		final EGosplAlgorithm algo = GenStarGamaUtils.toGosplAlgorithm(gen.getGenerationAlgorithm());
 		switch (algo.concept) {
 		// SYNTHETIC RECONSTRUCTION
 		case SR: 
+
 			try {
 				gdb.buildDataTables();  // Load and read input data
 			} catch (final RuntimeException | IOException | InvalidSurveyFormatException | InvalidFormatException e) {
@@ -138,7 +159,7 @@ public class GenstarGenerationOperators {
 			} catch (final IllegalControlTotalException e1) {
 				throw GamaRuntimeException.error("Error of control in collapsing DataTable into distibution. "+e1.getMessage(), scope);
 			}
-
+			
 			// BUILD THE SAMPLER WITH THE PROPER ALGORITHM
 			ISampler<ACoordinate<Attribute<? extends IValue>, IValue>> sampler = null;
 
@@ -227,14 +248,9 @@ public class GenstarGenerationOperators {
 				if (targetPopulation <= 0) {
 					population = p;
 				} else {
-					List<ADemoEntity> popSample = new ArrayList<>(p);
-					for (int i= 0; i < targetPopulation; i++) {
-						ADemoEntity ent =  popSample.get(scope.getRandom().between(0, popSample.size()-1));
-						Map<Attribute<? extends IValue>, IValue> atts = ent.getAttributes().stream()
-								.collect(Collectors.toMap(a -> a, a -> ent.getValueForAttribute(a)));
-						ADemoEntity entity = new GosplEntity(atts);
-						population.add(entity);
-					}
+					MicroDataSampler mds = new MicroDataSampler();
+					mds.setSample(p, false);
+					population.addAll(mds.draw(targetPopulation));
 				}
 
 				break;
@@ -245,13 +261,70 @@ public class GenstarGenerationOperators {
 			// TODO : UPDATE POPULATION
 			// -----------------
 		case MIXTURE: 
-			throw new UnsupportedOperationException("Mixture population synthesis have not yet been ported from API to plugin ! request dev if necessary ;)");
+			throw new UnsupportedOperationException("Mixture population synthesis have not yet been ported from API to plugin ! "
+					+ "request dev at https://github.com/ANRGenstar/genstar.gamaplugin ;)");
 
 			// --------------------------------
 			// TODO : MULTILEVEL POPULATION GENERATION
 			// --------------------------------
 		case MULTILEVEL:
-			throw new UnsupportedOperationException("Genstar Gama plugin Cannot yet build a multi-level population");
+			
+			
+			
+			try {
+				gdb.buildMultiLayerSamples(); // Retrieve sample
+			} catch (final RuntimeException | IOException | InvalidSurveyFormatException | InvalidFormatException e) {
+				throw GamaRuntimeException.error(e.getLocalizedMessage(), scope);
+			} 
+
+			IPopulation mp = gdb.getRawSamples().stream().findFirst().orElseThrow(NullPointerException::new);
+			
+			// Inidividual layer marginal data retrieval
+			Set<AFullNDimensionalMatrix<Integer>> objectives = new HashSet<>();
+			// The actual marginal to fit sample with
+			List<Attribute<? extends IValue>> marginalAttributes = gen.getMarginals();
+			for(AFullNDimensionalMatrix<Integer> table : gdb.getContingencyTables()) {
+				Set<Attribute<? extends IValue>> currentMarginals = table.getDimensions().stream()
+						.filter(dim -> marginalAttributes.contains(dim) || marginalAttributes.stream().anyMatch(att -> dim.isLinked(dim)))
+						.collect(Collectors.toSet());
+				if (!currentMarginals.isEmpty()){
+					AFullNDimensionalMatrix<Integer> filteredMatrix = GosplNDimensionalMatrixFactory.getFactory()
+							.cloneContingency(currentMarginals, table);
+					objectives.add(filteredMatrix);
+				}
+			}
+			
+			// Retrieve sample to setup the CO sampler
+			GosplMultitypePopulation<ADemoEntity> sample = gdb.getMultiSamples().iterator().next();
+			
+			// Setup the sampler of multilevel entities
+			ISampler<ADemoEntity> samplerML= null;
+			
+			switch (algo) {
+			case TABU: throw new UnsupportedOperationException();
+			case SA: throw new UnsupportedOperationException();
+			case RS: 
+				if(targetPopulation <= 0) { targetPopulation = objectives.stream().findFirst().get().getVal().getValue();}
+				MultiPopulationNeighborSearch pvns = new MultiPopulationNeighborSearch(new PopulationVectorNeighborSearch());
+				GosplBiLayerOptimizationSampler<AMultiLayerOptimizationAlgorithm> samplerCO = 
+						new GosplBiLayerOptimizationSampler<>(new MultiHillClimbing(pvns, 
+								gen.max_iteration, gen.neighborhood_extends, targetPopulation*gen.fitness_threshold));
+				objectives.stream().forEach(obj -> samplerCO.addObjectives(obj));
+					
+				samplerML = new MultiLayerSampleBasedAlgorithm<>().setupCOSampler(1, sample, true, samplerCO);
+				break;
+			default:
+				if(targetPopulation <= 0) { population = mp;}
+				else {
+					MicroDataSampler mds = new MicroDataSampler();
+					mds.setSample(mp, true);
+					population.addAll(mds.drawWithChildrenNumber(targetPopulation));
+				}
+			}
+			
+			population = new SampleBasedGenerator(samplerML).generate(targetPopulation);
+			
+			break;
 		}
        
 		if (population == null) return null;
@@ -402,7 +475,37 @@ public class GenstarGenerationOperators {
 		SPLVectorFile sfGeoms = null;
 		SPLVectorFile sfCensus = null;		
 		
-		if (sfGeomsF != null && !sfGeomsF.exists()) return population;			
+		if (sfGeomsF != null && !sfGeomsF.exists()) return population;
+		
+		if(sfGeomsF == null && !gen.getAgentsGeometries().isEmpty()) {
+			
+			// final GeoEntityFactory gef = new GeoEntityFactory(Collections.emptyMap());
+			final Map<String, IExpression> attributes = GamaMapFactory.create();
+			final IList<? extends IAgent> agents = gen.getAgentsGeometries();
+			
+			// ------------------------------------------------------------------------------ //
+			// Taken from Gama core SaveStatement.java class to extract attributes from agent //
+			// ------------------------------------------------------------------------------ //
+			
+			final Set NON_SAVEABLE_ATTRIBUTE_NAMES = new HashSet<>(Arrays.asList(IKeyword.PEERS,
+					IKeyword.LOCATION, IKeyword.HOST, IKeyword.AGENTS, IKeyword.MEMBERS, IKeyword.SHAPE));
+			final SpeciesDescription species =
+					agents instanceof msi.gama.metamodel.population.IPopulation ? 
+							((msi.gama.metamodel.population.IPopulation) agents).getSpecies().getDescription()
+							: agents.getGamlType().getContentType().getSpecies();
+			
+			for (final String var : species.getAttributeNames()) {
+				if (!NON_SAVEABLE_ATTRIBUTE_NAMES.contains(var)) {
+					attributes.put(var, species.getVarExpr(var, false));
+				}
+			}
+			
+			/* TODO : what is this ?
+			IList<SpllFeature> spllAgents = gen.getAgentsGeometries().stream(scope)
+					.map(a -> gef.createGeoEntity(a.getGeometry().getInnerGeometry(), Collections.emptyMap()))
+					.collect(GamaListFactory.toGamaList());
+					*/
+		}
 	 		
 		// ----------
 		// SETUP SPATIAL ENTITIES, i.e. NESTS and MATCHES (e.g. Census area)
