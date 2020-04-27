@@ -2,7 +2,7 @@
 <feature
       id="genstar.gamaplugin.feature"
       label="GenstarGama Feature"
-      version="1.0.3.qualifier">
+      version="1.0.4.qualifier">
 
    <description url="http://www.example.com/description">
       [Enter Feature Description here.]
