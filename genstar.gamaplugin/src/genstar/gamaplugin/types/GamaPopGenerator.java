@@ -91,11 +91,13 @@ public class GamaPopGenerator implements IValue {
 	public final static String DEMOGRAPHIC_FILES = "demographic_files";
 	private List<GSSurveyWrapper> inputFiles;
 	
-	public final static String ATTRIBUTES_DICTIONARY = "demographic_dictionary";
+	public final static String ATTRIBUTES_DICTIONARY = "individual_dictionary";
+	public final static String HOUSEHOLD_DICTIONARY = "household_dictionary";
 	public final static String ATTRIBUTES = "demographic_attributes";
 	public final static String MARGINALS = "demogrphic_marginals";
 	
-	private AttributeDictionary inputAttributes;
+	private AttributeDictionary householdAttributes;
+	private AttributeDictionary individualAttributes;
 	private List<Attribute<? extends core.metamodel.value.IValue>> marginals;
 	
 	public final static String IPF = "ipf";
@@ -155,7 +157,7 @@ public class GamaPopGenerator implements IValue {
 	public GamaPopGenerator() {
 		generationAlgorithm = GenerationAlgorithm.DIRECTSAMPLING.getAlias().get(0);		
 		inputFiles = new ArrayList<>();
-		inputAttributes = new AttributeDictionary();
+		individualAttributes = new AttributeDictionary();
 		
 		minDistanceLocalize = 0.0;
 		maxDistanceLocalize = 0.0;
@@ -195,15 +197,25 @@ public class GamaPopGenerator implements IValue {
 	public void setInputFiles(List<GSSurveyWrapper> inputFiles) {
 		this.inputFiles = inputFiles;
 	}
+	
+	@getter(HOUSEHOLD_DICTIONARY)
+	public AttributeDictionary getHouseholdAttributes() {
+		return householdAttributes;
+	}
+	
+	@setter(HOUSEHOLD_DICTIONARY)
+	public void setHouseholdAttributes(AttributeDictionary householdAttributes) {
+		this.householdAttributes = householdAttributes;
+	}
 
 	@getter(ATTRIBUTES_DICTIONARY)
 	public AttributeDictionary getInputAttributes() {
-		return inputAttributes;
+		return individualAttributes;
 	}
 
 	@setter(ATTRIBUTES_DICTIONARY)
 	public void setInputAttributes(AttributeDictionary inputAttributes) {
-		this.inputAttributes = inputAttributes;
+		this.individualAttributes = inputAttributes;
 	}
 	
 	@getter(ATTRIBUTES)

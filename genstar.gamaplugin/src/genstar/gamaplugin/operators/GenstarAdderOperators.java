@@ -2,15 +2,21 @@ package genstar.gamaplugin.operators;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import core.configuration.dictionary.AttributeDictionary;
+import core.configuration.dictionary.IGenstarDictionary;
 import core.metamodel.attribute.Attribute;
 import core.metamodel.attribute.AttributeFactory;
+import core.metamodel.io.GSSurveyType;
 import core.metamodel.io.GSSurveyWrapper;
 import core.metamodel.value.IValue;
 import core.util.excpetion.GSIllegalRangedData;
 import genstar.gamaplugin.types.GamaPopGenerator;
 import genstar.gamaplugin.utils.GenStarGamaUtils;
+import gospl.io.ipums.ReadIPUMSDictionaryUtils;
 import msi.gama.common.util.FileUtils;
 import msi.gama.precompiler.GamlAnnotations.doc;
 import msi.gama.precompiler.GamlAnnotations.example;
@@ -36,7 +42,33 @@ public class GenstarAdderOperators {
 				csvSeparator.isEmpty() ? ',':csvSeparator.charAt(0), firstRowIndex, firstColumnIndex));
 		return gen;
 	}
-
+	
+	@operator(value = "add_ipums_micro_data", category = { "Gen*" }, concept = { "Gen*" })
+	@doc(value = "add a micro-sample from IPUMS data base as a csv file with its dictionary",
+			examples = @example(value = "add_marginals(pop_gen, ipums_micro_data_file, ipums_dictionary)"))
+	@no_test
+	public static GamaPopGenerator addIPUMSMicroData(IScope scope, GamaPopGenerator gen, String IPUMSFilePath, String IPUMSDictionaryFilePath) {
+		if (gen == null) { throw GamaRuntimeException.create(new IllegalArgumentException("Cannot set marginals with a null generator"), scope);}
+		Path ipumsData_filePath = Paths.get(FileUtils.constructAbsoluteFilePath(scope, IPUMSFilePath, false));
+		Path ipumsDictionary_filePath = Paths.get(FileUtils.constructAbsoluteFilePath(scope, IPUMSDictionaryFilePath, false));
+		gen.getInputFiles().add(new GSSurveyWrapper(ipumsData_filePath, GSSurveyType.Sample,',',1,1));
+		
+		// Dictionaries from ipums
+		Set<IGenstarDictionary<Attribute<? extends IValue>>> dds = null;
+		try {
+			dds = new ReadIPUMSDictionaryUtils().readDictionariesFromIPUMSDescription(ipumsDictionary_filePath.toFile());
+		} catch (GSIllegalRangedData e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		List<IGenstarDictionary<Attribute<? extends IValue>>> dicos = dds.stream()
+				.sorted((d1,d2) -> d1.getLevel() < d2.getLevel() ? -1 : 1)
+				.collect(Collectors.toList());
+		gen.getInputAttributes().addAttributes(dicos.get(0).getAttributes());
+		gen.setHouseholdAttributes((AttributeDictionary)dicos.get(1));
+		
+		return gen;
+	}
 	
 	@operator(value = "add_mapper", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
 	@doc(value = "add a mapper between source of data for a attribute to a population_generator. "
@@ -170,7 +202,7 @@ public class GenstarAdderOperators {
 	
 	@operator(value = "add_marginals", category = { "Gen*" }, concept = { "Gen*" })
 	@doc(value = "add a list of marginals (name of the attributes) to fit the population with, in any CO based algorithm",
-			examples = @example(value = "add_marginals(pop_gen, [\"gender\",\"age\"]"))
+			examples = @example(value = "add_marginals(pop_gen, [\"gender\",\"age\"])"))
 	@no_test
 	public static GamaPopGenerator addMarginals(IScope scope, GamaPopGenerator gen, IList names) {
 		if (gen == null) { throw GamaRuntimeException.create(new IllegalArgumentException("Cannot set marginals with a null generator"), scope);}
@@ -179,4 +211,5 @@ public class GenstarAdderOperators {
 				.collect(Collectors.toList()));
 		return gen;
 	}
+	
 }
