@@ -367,7 +367,7 @@ public class GenstarGenerationOperators {
 		final Collection<Attribute<? extends IValue>> attributes = population.getPopulationAttributes();
 	   int nb = 0;
         List<ADemoEntity> es = new ArrayList(population);
-        if (number > 0 && number < es.size()) es = scope.getRandom().shuffle(es);
+        if (number > 0 && number < es.size()) scope.getRandom().shuffleInPlace(es);
         for (final ADemoEntity e : es) {
         	IShape entity = null;
         	if (population instanceof SpllPopulation) {
@@ -397,7 +397,7 @@ public class GenstarGenerationOperators {
 		final Collection<Attribute<? extends IValue>> attributes = population.getPopulationAttributes();
 	    int nb = 0;
         List<ADemoEntity> es = new ArrayList(population);
-        if (number > 0 && number < es.size()) es = scope.getRandom().shuffle(es);
+        if (number > 0 && number < es.size()) scope.getRandom().shuffleInPlace(es);
         for (final ADemoEntity e : es) {
         	IShape entity = null;
         	if (population instanceof SpllPopulation) {
@@ -442,7 +442,7 @@ public class GenstarGenerationOperators {
       
         int nb = 0;
         List<ADemoEntity> es = new ArrayList(population);
-        if (number > 0 && number < es.size()) es = scope.getRandom().shuffle(es);
+        if (number > 0 && number < es.size()) scope.getRandom().shuffleInPlace(es);
         for (final ADemoEntity e : es) {
         	
         	Map entity = GamaMapFactory.create();

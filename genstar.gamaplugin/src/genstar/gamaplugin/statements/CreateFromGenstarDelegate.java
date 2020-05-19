@@ -93,7 +93,7 @@ public class CreateFromGenstarDelegate implements ICreateDelegate {
 		final Collection<Attribute<? extends IValue>> attributes = population.getPopulationAttributes();
 	    int nb = 0;
         List<ADemoEntity> es = new ArrayList(population);
-        if (number > 0 && number < es.size()) es = scope.getRandom().shuffle(es);
+        if (number > 0 && number < es.size()) scope.getRandom().shuffleInPlace(es);
         for (final ADemoEntity e : es) {
         	final Map map = GamaMapFactory.create();
         	if (e instanceof SpllEntity) {	

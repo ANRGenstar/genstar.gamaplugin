@@ -29,3 +29,6 @@ release/*
 /*/bin/
 msi.gama.ext/lib/
 .__*
+## Gaml model
+**/outputs/
+**/outputs/*
