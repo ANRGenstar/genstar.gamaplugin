@@ -129,13 +129,30 @@ public class GenstarAdderOperators {
 	public static GamaPopGenerator addAttribute(IScope scope, GamaPopGenerator gen, String name, IType dataType, IList value) {
 		return addAttribute(scope, gen, name, dataType, value, false);
 	}
+	
+	@operator(value = "add_range_attribute", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
+	@doc(value = "add an attribute defined by its name (string), its datatype (type), its list of values (list) to a population_generator",
+			examples = @example(value = "add_attribute(pop_gen, \"Sex\", string,[\"Man\", \"Woman\"])", test = false))
+	@no_test
+	public static GamaPopGenerator addAttribute(IScope scope, GamaPopGenerator gen, String name, IList ranges, int lowest, int highest) {
+		if (gen == null) {GamaRuntimeException.error("Gen* Generator cannot be null", scope);}
+		Attribute<? extends IValue> newAttribute = null;
+		try {
+			newAttribute = gen.getAttf().createRangeAttribute(name, ranges, lowest, highest);
+		} catch (GSIllegalRangedData e) {
+			GamaRuntimeException.create(e, scope);
+		}
+		gen.getInputAttributes().addAttributes(newAttribute);
+		return gen;
+	}
 
 	@operator(value = "add_attribute", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
 	@doc(value = "add an attribute defined by its name (string), its datatype (type), its list of values (list) "
 			+ "and attributeType name (type of the attribute among \"range\" and \"unique\") to a population_generator", 
 			examples = @example(value = "add_attribute(pop_gen, \"iris\", string, liste_iris, \"unique\")", test = false))
 	@no_test
-	public static GamaPopGenerator addAttribute(IScope scope, GamaPopGenerator gen, String name, IType dataType, IList value, String record, IType recordType) {
+	public static GamaPopGenerator addAttribute(IScope scope, GamaPopGenerator gen, String name, IType dataType, 
+			IList value, String record, IType recordType) {
 		return addAttribute(scope, gen, name, dataType, value, false, record, recordType);
 	}	
 
@@ -143,7 +160,8 @@ public class GenstarAdderOperators {
 	@doc(value = "add an attribute defined by its name (string), its datatype (type), its list of values (list) to a population_generator",
 			examples = @example(value = "add_attribute(pop_gen, \"Sex\", string,[\"Man\", \"Woman\"])", test = false))
 	@no_test
-	public static GamaPopGenerator addAttribute(IScope scope, GamaPopGenerator gen, String name, IType dataType, IList value, Boolean ordered, String record, IType recordType) {
+	public static GamaPopGenerator addAttribute(IScope scope, GamaPopGenerator gen, String name, IType dataType, 
+			IList value, Boolean ordered, String record, IType recordType) {
 		if (gen == null) {
 			gen = new GamaPopGenerator();
 		}
