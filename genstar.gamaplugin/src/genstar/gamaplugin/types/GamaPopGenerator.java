@@ -56,25 +56,32 @@ import spll.localizer.distribution.SpatialDistributionFactory;
 
 
 @vars({
-	// TODO : old var to clean
-	@variable(name = GamaPopGenerator.ATTRIBUTES, type = IType.LIST, of = IType.STRING, doc = {@doc("Returns the list of attribute names") }),
-	@variable(name = "census_files", type = IType.LIST, of = IType.STRING, doc = {@doc("Returns the list of census files") }), 
-	@variable(name = "spatial_mapper_file", type = IType.LIST, of = IType.STRING, doc = {@doc("Returns the list of spatial files used to map the entities to areas") }),
-	@variable(name = "spatial_matcher_file", type = IType.STRING, doc = {@doc("Returns the spatial file used to match entities and areas") }),
-	// New var to include
+	// -------------------------------
+	// SYNTHETIC POPULATION GENERATION
+	@variable(name = GamaPopGenerator.ATTRIBUTES, 
+		type = IType.LIST, of = IType.STRING, 
+		doc = {@doc("Returns the list of attribute names") }), 
 	@variable(name = GamaPopGenerator.GENERATION_ALGO, 
 		type = IType.STRING, 
 		doc = {@doc("Returns the name of the generation algorithm") }),
+	@variable(name = GamaPopGenerator.MARGINALS,
+		type = IType.LABEL,
+		doc = {@doc("Returns the list of marginals to fit synthetic population with")}),
+	@variable(name = GamaPopGenerator.IPF, 
+		type = IType.BOOL, init = "false",
+		doc = {@doc("Enable the use of IPF to extrapolate a joint distribution upon marginals and seed sample")}),
+	// ---------------------------------
+	// SYNTHETIC POPULATION LOCALISATION
 	@variable(name = GamaPopGenerator.NESTS, 
 		type = IType.STRING, 
 		doc = {@doc("Returns the spatial file used to localize entities") }),
-	@variable(name = GamaPopGenerator.IPF, 
-		type = IType.BOOL,
-		init = "false",
-		doc = {@doc("Enable the use of IPF to extrapolate a joint distribution upon marginals and seed sample")}),
 	@variable(name = GamaPopGenerator.D_FEATURE, 
 		type=IType.STRING, 
-		doc = {@doc("The spatial feature to based spatial distribution of nest uppon")})
+		doc = {@doc("The spatial feature to based spatial distribution of nest uppon")}),
+	@variable(name = GamaPopGenerator.SPATIALDISTRIBUTION, type = 0), // Should it be a species ?
+	@variable(name = GamaPopGenerator.CONSTRAINTS, type = 0) // Same as distribution
+	// ----------------------------
+	// SYNTHETIC NETWORK GENERATION
 
 })
 public class GamaPopGenerator implements IValue {

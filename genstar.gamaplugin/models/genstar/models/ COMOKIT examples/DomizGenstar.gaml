@@ -32,14 +32,14 @@ global {
 		pop_gen <- add_census_file(pop_gen, age_sex_domiz0_csv_file.path, "ContingencyTable", ",", 1, 1);
 		
 		// Add the desired attribute to the population
-		pop_gen <- pop_gen add_attribute("age", gen_range, age);
+		pop_gen <- pop_gen add_range_attribute("age", age, 0, 100);
 		pop_gen <- pop_gen add_attribute("sex", string, sex);
 		
 		pop_gen <- pop_gen localize_on_geometries(buildings0_shape_file.path);
 		
 		create people from: pop_gen;
 		
-		save people to:domiz_population type:csv attributes:["age","sex"];
+		save people to:domiz_population type:csv;
 	}
 
 }

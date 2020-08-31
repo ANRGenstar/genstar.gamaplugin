@@ -17,8 +17,12 @@ global {
 		
 		gen_population_generator pop_gen;
 		pop_gen <- pop_gen add_ipums_micro_data(ipums_micro_data, ipums_dictionary);
+	
+		write sample(pop_gen.demographic_attributes);
 		
 	}
 	
 }
+
+experiment test type:gui {}
 
