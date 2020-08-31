@@ -45,12 +45,7 @@ global {
 		pop_gen <- add_census_file(pop_gen, f_ASCSP.path, "ContingencyTable", ";", 2, 1);
 		pop_gen <- add_census_file(pop_gen, f_AS.path, "ContingencyTable", ";", 1, 1);
 		pop_gen <- add_census_file(pop_gen, f_IRIS.path, "ContingencyTable", ",", 1, 1);			
-		
-//		pop_gen <- add_census_file(pop_gen, "../data/Age & Couple-Tableau 1eee.csv", "ContingencyTable", ";", 1, 1); 
-//		pop_gen <- add_census_file(pop_gen, "../data/Age & Sexe & CSP-Tableau 1.csv", "ContingencyTable", ";", 2, 1);
-//		pop_gen <- add_census_file(pop_gen, "../data/Age & Sexe-Tableau 1.csv", "ContingencyTable", ";", 1, 1);
-//		pop_gen <- add_census_file(pop_gen, "../data/Rouen_iris.csv", "ContingencyTable", ",", 1, 1);		
-
+	
 		// --------------------------
 		// Setup "AGE" attribute: INDIVIDUAL
 		// --------------------------	

@@ -477,7 +477,7 @@ public class GenstarGenerationOperators {
 		
 		if (sfGeomsF != null && !sfGeomsF.exists()) return population;
 		
-		if(sfGeomsF == null && !gen.getAgentsGeometries().isEmpty()) {
+		if(sfGeomsF == null && gen.getAgentsGeometries() != null && !gen.getAgentsGeometries().isEmpty()) {
 			
 			// final GeoEntityFactory gef = new GeoEntityFactory(Collections.emptyMap());
 			final Map<String, IExpression> attributes = GamaMapFactory.create();

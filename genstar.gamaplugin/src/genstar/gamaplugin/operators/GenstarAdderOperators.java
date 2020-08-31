@@ -57,7 +57,7 @@ public class GenstarAdderOperators {
 		Set<IGenstarDictionary<Attribute<? extends IValue>>> dds = null;
 		try {
 			dds = new ReadIPUMSDictionaryUtils().readDictionariesFromIPUMSDescription(ipumsDictionary_filePath.toFile());
-		} catch (GSIllegalRangedData e1) {
+		} catch (GSIllegalRangedData | NullPointerException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
@@ -139,7 +139,7 @@ public class GenstarAdderOperators {
 		Attribute<? extends IValue> newAttribute = null;
 		try {
 			newAttribute = gen.getAttf().createRangeAttribute(name, ranges, lowest, highest);
-		} catch (GSIllegalRangedData e) {
+		} catch (GSIllegalRangedData | NullPointerException e) {
 			GamaRuntimeException.create(e, scope);
 		}
 		gen.getInputAttributes().addAttributes(newAttribute);
