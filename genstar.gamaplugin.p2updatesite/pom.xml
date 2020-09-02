@@ -4,11 +4,11 @@
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.genstar</groupId>
-	<version>1.0.3-SNAPSHOT</version>	
+	<version>1.0.4-SNAPSHOT</version>	
 	<parent>
 		<groupId>org.genstar</groupId>
 		<artifactId>genstar.gamaplugin.parent</artifactId>
-		<version>1.0.3-SNAPSHOT</version>
+		<version>1.0.4-SNAPSHOT</version>
 		<relativePath>../genstar.gamaplugin.parent/</relativePath>
 	</parent>
 	<artifactId>genstar.gamaplugin.p2updatesite</artifactId>
