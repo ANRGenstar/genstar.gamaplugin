@@ -48,7 +48,7 @@ public class GenstarAdderOperators {
 			examples = @example(value = "add_marginals(pop_gen, ipums_micro_data_file, ipums_dictionary)"))
 	@no_test
 	public static GamaPopGenerator addIPUMSMicroData(IScope scope, GamaPopGenerator gen, String IPUMSFilePath, String IPUMSDictionaryFilePath) {
-		if (gen == null) { throw GamaRuntimeException.create(new IllegalArgumentException("Cannot set marginals with a null generator"), scope);}
+		if (gen == null) { gen = new GamaPopGenerator(); }
 		Path ipumsData_filePath = Paths.get(FileUtils.constructAbsoluteFilePath(scope, IPUMSFilePath, false));
 		Path ipumsDictionary_filePath = Paths.get(FileUtils.constructAbsoluteFilePath(scope, IPUMSDictionaryFilePath, false));
 		gen.getInputFiles().add(new GSSurveyWrapper(ipumsData_filePath, GSSurveyType.Sample,',',1,1));
@@ -57,10 +57,11 @@ public class GenstarAdderOperators {
 		Set<IGenstarDictionary<Attribute<? extends IValue>>> dds = null;
 		try {
 			dds = new ReadIPUMSDictionaryUtils().readDictionariesFromIPUMSDescription(ipumsDictionary_filePath.toFile());
-		} catch (GSIllegalRangedData | NullPointerException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+		} catch (GSIllegalRangedData | NullPointerException e) {
+			GamaRuntimeException.create(e, scope);
 		}
+		
+		if (dds == null) { throw new NullPointerException("Genstar dictionary has not been load correctly"); }
 		List<IGenstarDictionary<Attribute<? extends IValue>>> dicos = dds.stream()
 				.sorted((d1,d2) -> d1.getLevel() < d2.getLevel() ? -1 : 1)
 				.collect(Collectors.toList());
@@ -91,9 +92,7 @@ public class GenstarAdderOperators {
 			+ "[\"18 to 100\"]::[\"18 to 50\",\"51 to 100\"] , \"range\");", test = false))
 	@no_test
 	public static GamaPopGenerator addMapper(IScope scope, GamaPopGenerator gen, String referentAttributeName, IType dataType, GamaMap values, Boolean ordered) {
-		if (gen == null) {
-			gen = new GamaPopGenerator();
-		}
+		if (gen == null) { gen = new GamaPopGenerator(); }
 		if (referentAttributeName == null) return gen;
 		
 		AttributeFactory attf = AttributeFactory.getFactory();		
@@ -135,7 +134,7 @@ public class GenstarAdderOperators {
 			examples = @example(value = "add_attribute(pop_gen, \"Sex\", string,[\"Man\", \"Woman\"])", test = false))
 	@no_test
 	public static GamaPopGenerator addAttribute(IScope scope, GamaPopGenerator gen, String name, IList ranges, int lowest, int highest) {
-		if (gen == null) {GamaRuntimeException.error("Gen* Generator cannot be null", scope);}
+		if (gen == null) { gen = new GamaPopGenerator(); }
 		Attribute<? extends IValue> newAttribute = null;
 		try {
 			newAttribute = gen.getAttf().createRangeAttribute(name, ranges, lowest, highest);
@@ -162,9 +161,7 @@ public class GenstarAdderOperators {
 	@no_test
 	public static GamaPopGenerator addAttribute(IScope scope, GamaPopGenerator gen, String name, IType dataType, 
 			IList value, Boolean ordered, String record, IType recordType) {
-		if (gen == null) {
-			gen = new GamaPopGenerator();
-		}
+		if (gen == null) { gen = new GamaPopGenerator(); }
 		
 		GamaPopGenerator genPop = addAttribute(scope, gen, name, dataType, value, ordered);
 		genPop.getInputAttributes().addRecords();
@@ -223,7 +220,7 @@ public class GenstarAdderOperators {
 			examples = @example(value = "add_marginals(pop_gen, [\"gender\",\"age\"])"))
 	@no_test
 	public static GamaPopGenerator addMarginals(IScope scope, GamaPopGenerator gen, IList names) {
-		if (gen == null) { throw GamaRuntimeException.create(new IllegalArgumentException("Cannot set marginals with a null generator"), scope);}
+		if (gen == null) { gen = new GamaPopGenerator(); }
 		gen.setMarginals(gen.getInputAttributes().getAttributes().stream()
 				.filter(att -> names.contains(att.getAttributeName()))
 				.collect(Collectors.toList()));
