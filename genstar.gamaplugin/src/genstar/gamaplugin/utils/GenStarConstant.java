@@ -22,9 +22,16 @@ public class GenStarConstant {
 		
 		List<String> getAlias();
 		
+		/**
+		 * Test if the alias is a valid one
+		 * @param alias
+		 * @return true if provided alias is authorized, false otherwise
+		 */
 		default boolean getMatch(String alias) {
 			return getAlias().stream().anyMatch(elem -> elem.equalsIgnoreCase(alias)); 
 		}
+		
+		default String getDefault() { return getAlias().get(0); }
 		
 	}
 	
@@ -35,7 +42,7 @@ public class GenStarConstant {
 	 *
 	 */
 	public enum SpatialDistribution implements IGSAlias {
-		DEFAULT (Arrays.asList("","uniform"),SpatialDistributionConcept.SIMPLE),
+		DEFAULT (Arrays.asList("uniform",""),SpatialDistributionConcept.SIMPLE),
 		AREA (Arrays.asList("area","areal"),SpatialDistributionConcept.SIMPLE),
 		CAPACITY (Arrays.asList("capacity","number"),SpatialDistributionConcept.NUMBER),
 		DENSITY (Arrays.asList("density"),SpatialDistributionConcept.NUMBER);
@@ -116,6 +123,28 @@ public class GenStarConstant {
 		@Override
 		public List<String> getAlias() { return alias; }
 		
+	}
+	
+	/**
+	 * The different type of network engine to be used by Genstar to generate interaction graph
+	 * 
+	 * @author kevinchapuis
+	 *
+	 */
+	public enum NetworkEngine implements IGSAlias {
+		COMPLETE (Arrays.asList("Complete", "Complet")),
+		RANDOM (Arrays.asList("Random", "Uniform", "Aléatoire")),
+		REGULAR (Arrays.asList("Regular", "Latice", "Regulier")),
+		SPATIAL (Arrays.asList("Spatial", "Spatiale")),
+		SCALE_FREE (Arrays.asList("Scale free", "SF", "Barabási–Albert", "Power low")),
+		SMALL_WORLD (Arrays.asList("Small world", "SW", "Watts-Strogatz"));
+		
+		List<String> alias;
+		
+		private NetworkEngine(List<String> alias) { this.alias = alias; }
+
+		@Override
+		public List<String> getAlias() { return alias; }
 	}
 	
 }

@@ -4,13 +4,14 @@ import genstar.gamaplugin.types.GamaPopGenerator;
 import genstar.gamaplugin.utils.GenStarConstant.SpatialDistribution;
 import genstar.gamaplugin.utils.GenStarGamaConstraintBuilder;
 import genstar.gamaplugin.utils.GenStarGamaUtils;
+import msi.gama.metamodel.agent.IAgent;
 import msi.gama.precompiler.GamlAnnotations.doc;
 import msi.gama.precompiler.GamlAnnotations.example;
 import msi.gama.precompiler.GamlAnnotations.no_test;
 import msi.gama.precompiler.GamlAnnotations.operator;
 import msi.gama.runtime.IScope;
 import msi.gama.runtime.exceptions.GamaRuntimeException;
-import msi.gama.util.IList;
+import msi.gama.util.IContainer;
 
 /**
  * Define all localization operators available
@@ -32,7 +33,7 @@ public class GenstarLocalizeOperators {
 	@no_test
 	public static GamaPopGenerator addSpatialMatch(IScope scope, GamaPopGenerator gen, 
 			String stringOfCensusIdInCSVfile, String stringOfCensusIdInShapefile, double limit, double step, int priority) {
-		if(gen.getPathCensusGeometries() == null ) {
+		if(gen.getPathCensusGeometries() == null && gen.getNestAgentsGeometries().isEmpty(scope)) {
 			throw GamaRuntimeException.error("Cannot set a spatial Matcher when the Census Shapefile has not been set.", scope);
 		}
 		gen.getConstraintBuilder().addLocalizationConstraint(stringOfCensusIdInShapefile, stringOfCensusIdInCSVfile, limit, step, priority);		
@@ -242,11 +243,11 @@ public class GenstarLocalizeOperators {
 	
 	@operator(value = "localize_on_agents", can_be_const = true, category = { "Gen*" }, concept = { "Gen*"})
 	@doc(value = "Makes it possible to setup a localization to target geometries associated with a set of agent",
-			examples = @example(value = "pop_gen localize_on_census \"census_file_path\"", test = false))
+			examples = @example(value = "pop_gen localize_on_agents container_of_agents", test = false))
 	@no_test
-	public static GamaPopGenerator localizeOnAgents(IScope scope, GamaPopGenerator gen, IList listOfAgents) {
+	public static GamaPopGenerator localizeOnAgents(IScope scope, GamaPopGenerator gen, IContainer<?, ? extends IAgent> listOfAgents) {
 		gen.setSpatializePopulation(true);
-		gen.setAgentsGeometries(listOfAgents);
+		gen.setNestAgentsGeometries(listOfAgents);
 		return gen;
 	}
 }

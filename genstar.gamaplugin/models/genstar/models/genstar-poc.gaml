@@ -48,8 +48,8 @@ global {
 		"765400404","765400105","765401002","765400902","765400403",
 		"765400203","765400101","765400205"];
 
-	graph<people> graph_friends;
-	graph<people> graph_colleagues;
+	graph<people, geometry> graph_friends;
+	graph<people, geometry> graph_colleagues;
 
 				
 	init {	

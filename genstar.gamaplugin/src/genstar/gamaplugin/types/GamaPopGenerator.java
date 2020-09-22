@@ -39,6 +39,7 @@ import msi.gama.precompiler.GamlAnnotations.vars;
 import msi.gama.runtime.IScope;
 import msi.gama.runtime.exceptions.GamaRuntimeException;
 import msi.gama.util.GamaListFactory;
+import msi.gama.util.IContainer;
 import msi.gama.util.IList;
 import msi.gaml.operators.Strings;
 import msi.gaml.types.IType;
@@ -131,7 +132,7 @@ public class GamaPopGenerator implements IValue {
 	String pathNestGeometries;
 	
 	public final static String AGENT_NESTS = "Nests_agents";
-	IList<? extends IAgent> listOfNestAgents;
+	IContainer<?, ? extends IAgent> listOfNestAgents;
 	
 	// Spatial distribution
 	public final static String SPATIALDISTRIBUTION = "spatial_distribution";
@@ -341,12 +342,12 @@ public class GamaPopGenerator implements IValue {
 	
 
 	@getter(AGENT_NESTS)
-	public void setAgentsGeometries(IList<? extends IAgent> listOfAgents) {
+	public void setNestAgentsGeometries(IContainer<?, ? extends IAgent> listOfAgents) {
 		this.listOfNestAgents = listOfAgents;
 	}
 	
 	@setter(AGENT_NESTS)
-	public IList<? extends IAgent> getAgentsGeometries() {
+	public IContainer<?, ? extends IAgent> getNestAgentsGeometries() {
 		return this.listOfNestAgents;
 	}
 
